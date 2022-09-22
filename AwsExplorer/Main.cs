@@ -51,6 +51,57 @@ public partial class Main : Form
         }
     }
 
+    private void Main_Resize( object sender, EventArgs e )
+    {
+        if( this.WindowState == FormWindowState.Minimized && string.Equals( this.Settings?.MinimizeAction, "Minimize to System Tray" ) )
+        {
+            this.notifyIcon.Visible = true;
+            this.ShowInTaskbar = false;
+        }
+    }
+
+    private void Main_ResizeEnd( object sender, EventArgs e )
+    {
+        var changed = false;
+        if( this.Settings == null ) return;
+
+        if( this.Settings.WindowWidth != this.Width )
+        {
+            this.Settings.WindowWidth = this.Width;
+            changed = true;
+        }
+
+        if( this.Settings.WindowHeight != this.Height )
+        {
+            this.Settings.WindowHeight = this.Height;
+            changed = true;
+        }
+
+        if( changed )this.SaveSettings();
+    }
+
+    private void Main_FormClosing( object sender, FormClosingEventArgs e )
+    {
+        if( string.Equals( this.Settings?.CloseAction, "Close to System Tray" ) )
+        {
+            this.WindowState = FormWindowState.Minimized;
+            this.notifyIcon.Visible = true;
+            this.ShowInTaskbar = false;
+            e.Cancel = true;
+        }
+        else
+        {
+            if( this.S3Client != null ) this.S3Client.Dispose();
+        }
+    }
+
+    private void notifyIcon_MouseDoubleClick( object sender, MouseEventArgs e )
+    {
+        this.WindowState = FormWindowState.Normal;
+        this.notifyIcon.Visible = false;
+        this.ShowInTaskbar = true;
+    }
+
     private void tbAddFolder_Click( object sender, EventArgs e )
     {
         var d = new FolderDialog() { StartPosition = FormStartPosition.CenterParent };
@@ -114,26 +165,6 @@ public partial class Main : Form
         }
     }
 
-    private void Main_ResizeEnd( object sender, EventArgs e )
-    {
-        var changed = false;
-        if( this.Settings == null ) return;
-
-        if( this.Settings.WindowWidth != this.Width )
-        {
-            this.Settings.WindowWidth = this.Width;
-            changed = true;
-        }
-
-        if( this.Settings.WindowHeight != this.Height )
-        {
-            this.Settings.WindowHeight = this.Height;
-            changed = true;
-        }
-
-        if( changed )this.SaveSettings();
-    }
-
     private void tbSettings_Click( object sender, EventArgs e )
     {
         this.Settings ??= new Settings();
@@ -159,6 +190,26 @@ public partial class Main : Form
         await this.LoadRemoteFiles( true );
     }
 
+    private async void tbDownload_Click( object sender, EventArgs e )
+    {
+        if( this.Folder?.Links == null ) return;
+
+        foreach( var link in this.Folder.Links.Where( m => m.Download ) )
+        {
+            await this.SyncDown( link );
+        }
+    }
+
+    private async void toolStripButton2_Click( object sender, EventArgs e )
+    {
+        if( this.Folder?.Links == null ) return;
+
+        foreach( var link in this.Folder.Links.Where( m => m.Upload ) )
+        {
+            await this.SyncUp( link );
+        }
+    }
+
     private void tbViewLogs_Click( object sender, EventArgs e )
     {
         var fullPath = !string.IsNullOrEmpty( this.Settings?.LogFilePath )
@@ -168,6 +219,11 @@ public partial class Main : Form
         if( !File.Exists( fullPath ) ) return;
 
         System.Diagnostics.Process.Start( "notepad.exe", fullPath );
+    }
+
+    private void tbCollapseAll_Click( object sender, EventArgs e )
+    {
+        this.treeView.CollapseAll();
     }
 
     private void splitContainer_SplitterMoved( object sender, SplitterEventArgs e )
@@ -187,7 +243,7 @@ public partial class Main : Form
 
             this.lblKey.Text = obj.Key;
             this.lblSize.Text = SizeSuffix( obj.Size ) + $"   ({obj.Size:N0} byes)";
-            this.lblModified.Text = obj.LastModified.ToString( "G" );
+            this.lblModified.Text = obj.LastModified.ToUniversalTime().ToString( "G" ) + " UTC";
             this.txtComments.Text = this.txtHistory.Text = null;
 
             if( this.S3Client != null && this.Folder != null && this.Folder.DatFile )
@@ -232,7 +288,7 @@ public partial class Main : Form
     {
         if( this.S3Client == null ) return;
 
-        var confirmResult = MessageBox.Show( "Are you sure to delete this item?", "Confirm Delete", MessageBoxButtons.YesNo );
+        var confirmResult = MessageBox.Show( "Are you sure to delete this item? It will be deleted from the S3 bucket and your local computer.", "Confirm Delete", MessageBoxButtons.YesNo );
         if( confirmResult != DialogResult.Yes ) return;
 
         async Task DeleteFolder( TreeNode node )
@@ -440,6 +496,7 @@ public partial class Main : Form
         if( link.Download || link.Upload )
         {
             this.Folder.Links.Add( link );
+            this.SaveSettings();
         }
 
         await this.SyncDown( link );
@@ -946,12 +1003,74 @@ public partial class Main : Form
             this.lblStatus.Text = $"Downloading {path}";
 
             path = Path.Combine( link.Path, path.Replace( "/", "\\" ) );
+
+            var info = new FileInfo( path );
+            if( File.Exists( path ) && info.LastWriteTimeUtc > obj.LastModified )
+            {
+                // Local file is newer, don't overwrite it
+                this.pbProgress.Value++;
+                continue;
+            }
+
+            // Download the file
             await S3Client.DownloadToFilePathAsync( this.Folder.Bucket, obj.Key, path, null );
+            File.SetLastWriteTimeUtc( path, obj.LastModified.ToUniversalTime() );
 
             this.pbProgress.Value++;
         }
 
         this.pbProgress.Value = this.pbProgress.Maximum;
         this.lblStatus.Text = "All files downloaded";
+    }
+
+    private async Task SyncUp( LocalLink link )
+    {
+        if( this.Settings == null || this.S3Client == null || this.Folder == null ) return;
+
+        var objects = await S3Client.GetObjects( this.Folder.Bucket, link.Prefix ).ToListAsync();
+        var files = Directory.GetFiles( link.Path, "*.*", new EnumerationOptions { RecurseSubdirectories = true } );
+
+        this.pbProgress.Value = 0;
+        this.pbProgress.Minimum = 0;
+        this.pbProgress.Maximum = files.Length;
+
+        foreach( var file in files )
+        {
+            var info = new FileInfo( file );
+            var key = link.Prefix + file[link.Path.Length..].Replace( "\\", "/" );
+            var s3Object = objects.FirstOrDefault( m => string.Equals( key, m.Key ) );
+
+            if( s3Object != null && s3Object.LastModified.ToUniversalTime() >= info.LastWriteTimeUtc )
+            {
+                // No changes
+                this.pbProgress.Value++;
+                continue;
+            }
+
+            this.lblStatus.Text = $"Uploading {info.Name}";
+
+            await S3Client.PutObjectAsync( new PutObjectRequest
+            {
+                BucketName = this.Folder.Bucket,
+                FilePath = file,
+                Key = key,
+            } );
+
+            var response = await S3Client.GetObjectAsync( this.Folder.Bucket, key );
+
+            s3Object = new S3Object
+            {
+                Key = key,
+                Size = info.Length,
+                LastModified = response.LastModified,
+            };
+
+            File.SetLastWriteTimeUtc( file, s3Object.LastModified.ToUniversalTime() );
+            this.AddObject( s3Object );
+            this.pbProgress.Value++;
+        }
+
+        this.pbProgress.Value = this.pbProgress.Maximum;
+        this.lblStatus.Text = "All files uploaded";
     }
 }

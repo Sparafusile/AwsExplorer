@@ -33,9 +33,10 @@
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.tbSettings = new System.Windows.Forms.ToolStripButton();
             this.tbAddFolder = new System.Windows.Forms.ToolStripButton();
-            this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
             this.tbSync = new System.Windows.Forms.ToolStripButton();
+            this.tbDownload = new System.Windows.Forms.ToolStripButton();
             this.toolStripButton2 = new System.Windows.Forms.ToolStripButton();
+            this.tbCollapseAll = new System.Windows.Forms.ToolStripButton();
             this.tbViewLogs = new System.Windows.Forms.ToolStripButton();
             this.tbFontIncrease = new System.Windows.Forms.ToolStripButton();
             this.tbFontDecrease = new System.Windows.Forms.ToolStripButton();
@@ -61,11 +62,11 @@
             this.treeViewNodeRename = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.treeViewNodeDelete = new System.Windows.Forms.ToolStripMenuItem();
-            this.treeViewImages = new System.Windows.Forms.ImageList(this.components);
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.lblStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.pbProgress = new System.Windows.Forms.ToolStripProgressBar();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
             this.toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer)).BeginInit();
             this.splitContainer.Panel1.SuspendLayout();
@@ -84,9 +85,10 @@
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tbSettings,
             this.tbAddFolder,
-            this.toolStripButton1,
             this.tbSync,
+            this.tbDownload,
             this.toolStripButton2,
+            this.tbCollapseAll,
             this.tbViewLogs,
             this.tbFontIncrease,
             this.tbFontDecrease});
@@ -116,49 +118,67 @@
             this.tbAddFolder.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.tbAddFolder.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tbAddFolder.Name = "tbAddFolder";
-            this.tbAddFolder.Size = new System.Drawing.Size(36, 37);
+            this.tbAddFolder.Size = new System.Drawing.Size(37, 37);
             this.tbAddFolder.Text = "Add Folder";
             this.tbAddFolder.Click += new System.EventHandler(this.tbAddFolder_Click);
             // 
-            // toolStripButton1
-            // 
-            this.toolStripButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.toolStripButton1.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton1.Image")));
-            this.toolStripButton1.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
-            this.toolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolStripButton1.Name = "toolStripButton1";
-            this.toolStripButton1.Size = new System.Drawing.Size(28, 37);
-            this.toolStripButton1.Text = "Refresh Files";
-            // 
             // tbSync
             // 
+            this.tbSync.AutoSize = false;
             this.tbSync.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.tbSync.Image = ((System.Drawing.Image)(resources.GetObject("tbSync.Image")));
             this.tbSync.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.tbSync.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tbSync.Name = "tbSync";
-            this.tbSync.Size = new System.Drawing.Size(28, 37);
+            this.tbSync.Size = new System.Drawing.Size(37, 37);
             this.tbSync.Text = "Refresh Files";
             this.tbSync.Click += new System.EventHandler(this.tbSync_Click);
             // 
+            // tbDownload
+            // 
+            this.tbDownload.AutoSize = false;
+            this.tbDownload.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tbDownload.Image = ((System.Drawing.Image)(resources.GetObject("tbDownload.Image")));
+            this.tbDownload.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+            this.tbDownload.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tbDownload.Name = "tbDownload";
+            this.tbDownload.Size = new System.Drawing.Size(37, 37);
+            this.tbDownload.Text = "Sync Files to Computer";
+            this.tbDownload.Click += new System.EventHandler(this.tbDownload_Click);
+            // 
             // toolStripButton2
             // 
+            this.toolStripButton2.AutoSize = false;
             this.toolStripButton2.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButton2.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton2.Image")));
             this.toolStripButton2.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.toolStripButton2.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripButton2.Name = "toolStripButton2";
-            this.toolStripButton2.Size = new System.Drawing.Size(28, 37);
-            this.toolStripButton2.Text = "Refresh Files";
+            this.toolStripButton2.Size = new System.Drawing.Size(37, 37);
+            this.toolStripButton2.Text = "Sync Files to Cloud";
+            this.toolStripButton2.Click += new System.EventHandler(this.toolStripButton2_Click);
+            // 
+            // tbCollapseAll
+            // 
+            this.tbCollapseAll.AutoSize = false;
+            this.tbCollapseAll.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tbCollapseAll.Image = ((System.Drawing.Image)(resources.GetObject("tbCollapseAll.Image")));
+            this.tbCollapseAll.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+            this.tbCollapseAll.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tbCollapseAll.Name = "tbCollapseAll";
+            this.tbCollapseAll.Size = new System.Drawing.Size(37, 37);
+            this.tbCollapseAll.Text = "Collapse All";
+            this.tbCollapseAll.Click += new System.EventHandler(this.tbCollapseAll_Click);
             // 
             // tbViewLogs
             // 
+            this.tbViewLogs.AutoSize = false;
             this.tbViewLogs.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.tbViewLogs.Image = ((System.Drawing.Image)(resources.GetObject("tbViewLogs.Image")));
             this.tbViewLogs.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.tbViewLogs.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tbViewLogs.Name = "tbViewLogs";
-            this.tbViewLogs.Size = new System.Drawing.Size(28, 37);
+            this.tbViewLogs.Size = new System.Drawing.Size(37, 37);
             this.tbViewLogs.Text = "View Log";
             this.tbViewLogs.Click += new System.EventHandler(this.tbViewLogs_Click);
             // 
@@ -170,7 +190,7 @@
             this.tbFontIncrease.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.tbFontIncrease.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tbFontIncrease.Name = "tbFontIncrease";
-            this.tbFontIncrease.Size = new System.Drawing.Size(36, 37);
+            this.tbFontIncrease.Size = new System.Drawing.Size(37, 37);
             this.tbFontIncrease.Text = "Increase Font Size";
             this.tbFontIncrease.Visible = false;
             this.tbFontIncrease.Click += new System.EventHandler(this.tbFontIncrease_Click);
@@ -183,7 +203,7 @@
             this.tbFontDecrease.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.tbFontDecrease.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tbFontDecrease.Name = "tbFontDecrease";
-            this.tbFontDecrease.Size = new System.Drawing.Size(36, 37);
+            this.tbFontDecrease.Size = new System.Drawing.Size(37, 37);
             this.tbFontDecrease.Text = "Decrease Font Size";
             this.tbFontDecrease.Visible = false;
             this.tbFontDecrease.Click += new System.EventHandler(this.tbFontDecrease_Click);
@@ -443,14 +463,6 @@
             this.treeViewNodeDelete.Text = "Delete";
             this.treeViewNodeDelete.Click += new System.EventHandler(this.treeViewNodeDelete_Click);
             // 
-            // treeViewImages
-            // 
-            this.treeViewImages.ColorDepth = System.Windows.Forms.ColorDepth.Depth8Bit;
-            this.treeViewImages.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("treeViewImages.ImageStream")));
-            this.treeViewImages.TransparentColor = System.Drawing.Color.Transparent;
-            this.treeViewImages.Images.SetKeyName(0, "folder_full.png");
-            this.treeViewImages.Images.SetKeyName(1, "full_page.png");
-            // 
             // statusStrip1
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -485,6 +497,13 @@
             this.panel1.Size = new System.Drawing.Size(800, 393);
             this.panel1.TabIndex = 3;
             // 
+            // notifyIcon
+            // 
+            this.notifyIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon.Icon")));
+            this.notifyIcon.Text = "AWS File Explorer";
+            this.notifyIcon.Visible = true;
+            this.notifyIcon.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.notifyIcon_MouseDoubleClick);
+            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -496,8 +515,10 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Main";
             this.Text = "AWS File Explorer";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Main_FormClosing);
             this.Load += new System.EventHandler(this.Main_Load);
             this.ResizeEnd += new System.EventHandler(this.Main_ResizeEnd);
+            this.Resize += new System.EventHandler(this.Main_Resize);
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();
             this.splitContainer.Panel1.ResumeLayout(false);
@@ -526,10 +547,9 @@
         private ToolStripButton tbFontDecrease;
         private ToolStripButton tbSettings;
         private ToolStripButton tbAddFolder;
-        private ToolStripButton tbSync;
+        private ToolStripButton tbDownload;
         private ToolStripButton tbViewLogs;
         private ToolStripButton tbFontIncrease;
-        private ImageList treeViewImages;
         private TableLayoutPanel tableLayoutPanel2;
         private Label lblModified;
         private Label lblSize;
@@ -552,7 +572,9 @@
         private Panel panel1;
         private ToolStripStatusLabel lblStatus;
         private ToolStripProgressBar pbProgress;
-        private ToolStripButton toolStripButton1;
+        private ToolStripButton tbSync;
         private ToolStripButton toolStripButton2;
+        private ToolStripButton tbCollapseAll;
+        private NotifyIcon notifyIcon;
     }
 }
