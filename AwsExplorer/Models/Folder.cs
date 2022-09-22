@@ -16,6 +16,13 @@ public class Folder : IEqualityComparer<Folder>
 
     public bool DatFile { get; set; }
 
+    public List<LocalLink> Links { get; set; }
+
+    public Folder()
+    {
+        this.Links = new List<LocalLink>();
+    }
+
     public Folder Clone()
     {
         return new Folder
@@ -55,6 +62,23 @@ public class Folder : IEqualityComparer<Folder>
             return this.Bucket + "/" + this.Prefix;
         }
         else return this.Bucket;
+    }
+}
+
+public class LocalLink
+{
+    public string Prefix { get; set; }
+
+    public string Path { get; set; }
+
+    public bool Download { get; set; }
+
+    public bool Upload { get; set; }
+
+    public LocalLink( string prefix, string path )
+    {
+        Prefix = prefix;
+        Path = path;
     }
 }
 

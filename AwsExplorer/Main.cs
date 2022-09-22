@@ -84,6 +84,8 @@ public partial class Main : Form
         this.btnSaveComments.Visible = this.Folder.DatFile;
 
         this.Log( "Loading remote file list: " + this.Folder.Bucket );
+        this.lblStatus.Text = $"Loading remote files from {this.Folder.Bucket}...";
+        this.pbProgress.Value = 0;
 
         if( this.S3Client != null ) this.S3Client.Dispose();
         var region = Amazon.RegionEndpoint.GetBySystemName( this.Folder.Region );
@@ -103,6 +105,9 @@ public partial class Main : Form
 
         this.treeView.Sort();
 
+        this.lblStatus.Text = $"All files loaded from {this.Folder.Bucket}";
+        this.pbProgress.Value = this.pbProgress.Maximum;
+
         if( RestoreState )
         {
             this.treeView.Nodes.SetExpansionState( state );
@@ -111,10 +116,22 @@ public partial class Main : Form
 
     private void Main_ResizeEnd( object sender, EventArgs e )
     {
+        var changed = false;
         if( this.Settings == null ) return;
-        this.Settings.WindowWidth = this.Width;
-        this.Settings.WindowHeight = this.Height;
-        this.SaveSettings();
+
+        if( this.Settings.WindowWidth != this.Width )
+        {
+            this.Settings.WindowWidth = this.Width;
+            changed = true;
+        }
+
+        if( this.Settings.WindowHeight != this.Height )
+        {
+            this.Settings.WindowHeight = this.Height;
+            changed = true;
+        }
+
+        if( changed )this.SaveSettings();
     }
 
     private void tbSettings_Click( object sender, EventArgs e )
@@ -387,6 +404,47 @@ public partial class Main : Form
         if( d.ShowDialog() != DialogResult.OK ) return;
     }
 
+    private async void treeViewNodeDownload_Click( object sender, EventArgs e )
+    {
+        if( this.Settings == null || this.S3Client == null || this.Folder == null ) return;
+
+        var nodePath = this.treeView.SelectedNode.FullPath;
+        if( this.Folder.Links.Any( m => m.Prefix.StartsWith( nodePath ) ) )
+        {
+            var result = MessageBox.Show( this, "One or more files or sub directories already has a local link. Creating a new one will override the existing links.", "Duplicate Local Link", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning );
+            if( result != DialogResult.OK ) return;
+        }
+
+        var d = new DownloadDialog() { StartPosition = FormStartPosition.CenterParent };
+        if( d.ShowDialog() != DialogResult.OK ) return;
+
+        if( this.Folder.Links.Any( m => m.Path.StartsWith( d.Directory ) ) )
+        {
+            MessageBox.Show( this, "Sorry, that directory contains a directory or file that already has a local link. Please choose a different destination directory.", "Cannot Create Local Link", MessageBoxButtons.OK, MessageBoxIcon.Error );
+            return;
+        }
+
+        var fullPath = d.Directory;
+        if( this.treeView.SelectedNode.Tag is string s )
+        {
+            // If the node is a folder, add the folder name to the destination path
+            fullPath = Path.Combine( fullPath, this.treeView.SelectedNode.Text );
+        }
+
+        var link = new LocalLink( this.Folder.Prefix + nodePath, fullPath )
+        {
+            Upload = d.Upload,
+            Download = d.Download,
+        };
+
+        if( link.Download || link.Upload )
+        {
+            this.Folder.Links.Add( link );
+        }
+
+        await this.SyncDown( link );
+    }
+
     private void treeView_DragEnter( object sender, DragEventArgs e )
     {
         e.Effect = this.Folder == null ? DragDropEffects.None : DragDropEffects.All;
@@ -453,40 +511,50 @@ public partial class Main : Form
             }
         }
 
+        var objects = new List<(string, string)>();
         var paths = (string[])e.Data.GetData( DataFormats.FileDrop );
 
         foreach( var path in paths )
         {
             if( Directory.Exists( path ) )
             {
-                prefix += Path.GetFileName( path );
+                var tempPrefix = prefix + Path.GetFileName( path );
                 var files = Directory.GetFiles( path, "*.*", new EnumerationOptions { RecurseSubdirectories = true } );
 
                 foreach( var file in files )
                 {
                     var relativePath = file.Substring( path.Length );
-                    var key = prefix + relativePath.Replace( "\\", "/" );
-                    this.Log( $"Uploading file from '{file}' to '{key}'" );
-
-                    await this.CreateFile( key, file );
-
-                    var info = new FileInfo( file );
-                    this.AddObject( new S3Object { Key = key, Size = info.Length, LastModified = DateTime.Now } );
+                    var key = tempPrefix + relativePath.Replace( "\\", "/" );
+                    objects.Add( (file, key) );
                 }
             }
             else if( File.Exists( path ) )
             {
                 var key = prefix + Path.GetFileName( path );
-                this.Log( $"Uploading file from '{path}' to '{key}'" );
-
-                await this.CreateFile( key, path );
-
-                var info = new FileInfo( path );
-                this.AddObject( new S3Object { Key = key, Size = info.Length, LastModified = DateTime.Now } );
+                objects.Add( (path, key) );
             }
         }
 
+        this.pbProgress.Value = 0;
+        this.pbProgress.Minimum = 0;
+        this.pbProgress.Maximum = objects.Count;
+
+        foreach( var m in objects )
+        {
+            this.Log( $"Uploading file from '{m.Item1}' to '{m.Item2}'" );
+            this.lblStatus.Text = $"Uploading {m.Item1}";
+
+            await this.CreateFile( m.Item2, m.Item1 );
+
+            var info = new FileInfo( m.Item1 );
+            this.AddObject( new S3Object { Key = m.Item2, Size = info.Length, LastModified = DateTime.Now } );
+
+            this.pbProgress.Value++;
+        }
+
         this.treeView.Sort();
+        this.lblStatus.Text = $"All files uploaded";
+        this.pbProgress.Value = this.pbProgress.Maximum;
     }
 
     private void cbFolder_KeyUp( object sender, KeyEventArgs e )
@@ -524,6 +592,9 @@ public partial class Main : Form
         if( this.S3Client == null || this.Folder == null ) return;
         if( this.treeView.SelectedNode?.Tag is not S3Object obj ) return;
 
+        this.lblStatus.Text = "Saving comments...";
+        this.pbProgress.Value = 0;
+
         try
         {
             FileMetaData? metaData = null;
@@ -551,6 +622,9 @@ public partial class Main : Form
                 ContentBody = json,
                 Key = datKey,
             } );
+
+            this.lblStatus.Text = "Comments saved";
+            this.pbProgress.Value = this.pbProgress.Maximum;
         }
         catch( Exception ex )
         {
@@ -560,7 +634,8 @@ public partial class Main : Form
 
     private void LoadSettings()
     {
-        Log( "Loading settings..." );
+        this.lblStatus.Text = "Loading settings...";
+        this.pbProgress.Value = 0;
 
         if( File.Exists( SettingsFileName ) )
         {
@@ -595,7 +670,8 @@ public partial class Main : Form
             }
         }
 
-        Log( "No settings to load. Prompting user" );
+        this.lblStatus.Text = "Settings loaded";
+        this.pbProgress.Value = this.pbProgress.Maximum;
 
         this.Settings ??= new Models.Settings();
         if( string.IsNullOrWhiteSpace( this.Settings.UserName ) ) this.tbSettings.PerformClick();
@@ -604,7 +680,9 @@ public partial class Main : Form
     private void SaveSettings()
     {
         if( this.Settings == null ) return;
-        Log( "Saving settings..." );
+
+        this.lblStatus.Text = "Saving settings...";
+        this.pbProgress.Value = 0;
 
         var clone = this.Settings.Clone();
         clone.WindowWidth = this.Width;
@@ -636,6 +714,8 @@ public partial class Main : Form
         File.WriteAllText( SettingsFileName, json );
 
         Log( "Settings saved" );
+        this.lblStatus.Text = "Settings saved";
+        this.pbProgress.Value = this.pbProgress.Maximum;
     }
 
     private void Log( string Message, Exception? ex = null )
@@ -835,5 +915,43 @@ public partial class Main : Form
         } );
 
         await task;
+    }
+
+    private async Task SyncDown( LocalLink link )
+    {
+        if( this.Settings == null || this.S3Client == null || this.Folder == null ) return;
+
+        var objects = await S3Client.GetObjects( this.Folder.Bucket, link.Prefix ).ToListAsync();
+
+        this.pbProgress.Value = 0;
+        this.pbProgress.Minimum = 0;
+        this.pbProgress.Maximum = objects.Count;
+
+        foreach( var obj in objects )
+        {
+            var parts = obj.Key.Split( "/" );
+            if( parts[^1].StartsWith( "_" ) && parts[^1].EndsWith( ".dat" ) )
+            {
+                this.pbProgress.Value++;
+                continue;
+            }
+
+            var path = obj.Key;
+
+            if( path != link.Prefix ) path = path[( link.Prefix.Length )..];
+            else path = path.Split( "/" ).Last();
+
+            if( path.StartsWith( "/" ) ) path = path[1..];
+
+            this.lblStatus.Text = $"Downloading {path}";
+
+            path = Path.Combine( link.Path, path.Replace( "/", "\\" ) );
+            await S3Client.DownloadToFilePathAsync( this.Folder.Bucket, obj.Key, path, null );
+
+            this.pbProgress.Value++;
+        }
+
+        this.pbProgress.Value = this.pbProgress.Maximum;
+        this.lblStatus.Text = "All files downloaded";
     }
 }

@@ -33,7 +33,9 @@
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.tbSettings = new System.Windows.Forms.ToolStripButton();
             this.tbAddFolder = new System.Windows.Forms.ToolStripButton();
+            this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
             this.tbSync = new System.Windows.Forms.ToolStripButton();
+            this.toolStripButton2 = new System.Windows.Forms.ToolStripButton();
             this.tbViewLogs = new System.Windows.Forms.ToolStripButton();
             this.tbFontIncrease = new System.Windows.Forms.ToolStripButton();
             this.tbFontDecrease = new System.Windows.Forms.ToolStripButton();
@@ -55,11 +57,15 @@
             this.btnSaveComments = new System.Windows.Forms.Button();
             this.treeViewContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.treeViewNodeDownload = new System.Windows.Forms.ToolStripMenuItem();
+            this.treeViewNodeShare = new System.Windows.Forms.ToolStripMenuItem();
             this.treeViewNodeRename = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.treeViewNodeDelete = new System.Windows.Forms.ToolStripMenuItem();
             this.treeViewImages = new System.Windows.Forms.ImageList(this.components);
-            this.treeViewNodeShare = new System.Windows.Forms.ToolStripMenuItem();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.lblStatus = new System.Windows.Forms.ToolStripStatusLabel();
+            this.pbProgress = new System.Windows.Forms.ToolStripProgressBar();
+            this.panel1 = new System.Windows.Forms.Panel();
             this.toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer)).BeginInit();
             this.splitContainer.Panel1.SuspendLayout();
@@ -68,6 +74,8 @@
             this.tableLayoutPanel1.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
             this.treeViewContextMenu.SuspendLayout();
+            this.statusStrip1.SuspendLayout();
+            this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // toolStrip1
@@ -76,7 +84,9 @@
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tbSettings,
             this.tbAddFolder,
+            this.toolStripButton1,
             this.tbSync,
+            this.toolStripButton2,
             this.tbViewLogs,
             this.tbFontIncrease,
             this.tbFontDecrease});
@@ -110,6 +120,16 @@
             this.tbAddFolder.Text = "Add Folder";
             this.tbAddFolder.Click += new System.EventHandler(this.tbAddFolder_Click);
             // 
+            // toolStripButton1
+            // 
+            this.toolStripButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.toolStripButton1.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton1.Image")));
+            this.toolStripButton1.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+            this.toolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButton1.Name = "toolStripButton1";
+            this.toolStripButton1.Size = new System.Drawing.Size(28, 37);
+            this.toolStripButton1.Text = "Refresh Files";
+            // 
             // tbSync
             // 
             this.tbSync.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
@@ -117,9 +137,19 @@
             this.tbSync.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.tbSync.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tbSync.Name = "tbSync";
-            this.tbSync.Size = new System.Drawing.Size(36, 37);
+            this.tbSync.Size = new System.Drawing.Size(28, 37);
             this.tbSync.Text = "Refresh Files";
             this.tbSync.Click += new System.EventHandler(this.tbSync_Click);
+            // 
+            // toolStripButton2
+            // 
+            this.toolStripButton2.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.toolStripButton2.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton2.Image")));
+            this.toolStripButton2.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+            this.toolStripButton2.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButton2.Name = "toolStripButton2";
+            this.toolStripButton2.Size = new System.Drawing.Size(28, 37);
+            this.toolStripButton2.Text = "Refresh Files";
             // 
             // tbViewLogs
             // 
@@ -128,7 +158,7 @@
             this.tbViewLogs.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.tbViewLogs.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tbViewLogs.Name = "tbViewLogs";
-            this.tbViewLogs.Size = new System.Drawing.Size(36, 37);
+            this.tbViewLogs.Size = new System.Drawing.Size(28, 37);
             this.tbViewLogs.Text = "View Log";
             this.tbViewLogs.Click += new System.EventHandler(this.tbViewLogs_Click);
             // 
@@ -161,7 +191,7 @@
             // splitContainer
             // 
             this.splitContainer.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitContainer.Location = new System.Drawing.Point(0, 40);
+            this.splitContainer.Location = new System.Drawing.Point(0, 0);
             this.splitContainer.Name = "splitContainer";
             // 
             // splitContainer.Panel1
@@ -171,7 +201,7 @@
             // splitContainer.Panel2
             // 
             this.splitContainer.Panel2.Controls.Add(this.tableLayoutPanel2);
-            this.splitContainer.Size = new System.Drawing.Size(800, 415);
+            this.splitContainer.Size = new System.Drawing.Size(800, 393);
             this.splitContainer.SplitterDistance = 389;
             this.splitContainer.TabIndex = 1;
             this.splitContainer.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this.splitContainer_SplitterMoved);
@@ -188,7 +218,7 @@
             this.tableLayoutPanel1.RowCount = 2;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(389, 415);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(389, 393);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
             // treeView
@@ -198,7 +228,7 @@
             this.treeView.Location = new System.Drawing.Point(3, 33);
             this.treeView.Name = "treeView";
             this.treeView.PathSeparator = "/";
-            this.treeView.Size = new System.Drawing.Size(383, 379);
+            this.treeView.Size = new System.Drawing.Size(383, 357);
             this.treeView.TabIndex = 0;
             this.treeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView_AfterSelect);
             this.treeView.DragDrop += new System.Windows.Forms.DragEventHandler(this.treeView_DragDrop);
@@ -248,7 +278,7 @@
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(407, 415);
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(407, 393);
             this.tableLayoutPanel2.TabIndex = 0;
             // 
             // lblModified
@@ -327,14 +357,14 @@
             this.txtComments.Multiline = true;
             this.txtComments.Name = "txtComments";
             this.txtComments.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtComments.Size = new System.Drawing.Size(401, 111);
+            this.txtComments.Size = new System.Drawing.Size(401, 100);
             this.txtComments.TabIndex = 7;
             // 
             // label5
             // 
             this.label5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(3, 229);
+            this.label5.Location = new System.Drawing.Point(3, 218);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(144, 15);
             this.label5.TabIndex = 8;
@@ -345,12 +375,12 @@
             this.txtHistory.AcceptsReturn = true;
             this.tableLayoutPanel2.SetColumnSpan(this.txtHistory, 2);
             this.txtHistory.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtHistory.Location = new System.Drawing.Point(3, 250);
+            this.txtHistory.Location = new System.Drawing.Point(3, 239);
             this.txtHistory.Multiline = true;
             this.txtHistory.Name = "txtHistory";
             this.txtHistory.ReadOnly = true;
             this.txtHistory.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtHistory.Size = new System.Drawing.Size(401, 111);
+            this.txtHistory.Size = new System.Drawing.Size(401, 100);
             this.txtHistory.TabIndex = 9;
             this.txtHistory.WordWrap = false;
             // 
@@ -359,7 +389,7 @@
             this.btnSaveComments.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.tableLayoutPanel2.SetColumnSpan(this.btnSaveComments, 2);
             this.btnSaveComments.Image = ((System.Drawing.Image)(resources.GetObject("btnSaveComments.Image")));
-            this.btnSaveComments.Location = new System.Drawing.Point(3, 372);
+            this.btnSaveComments.Location = new System.Drawing.Point(3, 350);
             this.btnSaveComments.Name = "btnSaveComments";
             this.btnSaveComments.Size = new System.Drawing.Size(401, 35);
             this.btnSaveComments.TabIndex = 10;
@@ -378,13 +408,21 @@
             this.toolStripMenuItem1,
             this.treeViewNodeDelete});
             this.treeViewContextMenu.Name = "treeViewContextMenu";
-            this.treeViewContextMenu.Size = new System.Drawing.Size(181, 120);
+            this.treeViewContextMenu.Size = new System.Drawing.Size(129, 98);
             // 
             // treeViewNodeDownload
             // 
             this.treeViewNodeDownload.Name = "treeViewNodeDownload";
             this.treeViewNodeDownload.Size = new System.Drawing.Size(128, 22);
             this.treeViewNodeDownload.Text = "Download";
+            this.treeViewNodeDownload.Click += new System.EventHandler(this.treeViewNodeDownload_Click);
+            // 
+            // treeViewNodeShare
+            // 
+            this.treeViewNodeShare.Name = "treeViewNodeShare";
+            this.treeViewNodeShare.Size = new System.Drawing.Size(128, 22);
+            this.treeViewNodeShare.Text = "Share";
+            this.treeViewNodeShare.Click += new System.EventHandler(this.treeViewNodeShare_Click);
             // 
             // treeViewNodeRename
             // 
@@ -413,19 +451,47 @@
             this.treeViewImages.Images.SetKeyName(0, "folder_full.png");
             this.treeViewImages.Images.SetKeyName(1, "full_page.png");
             // 
-            // treeViewNodeShare
+            // statusStrip1
             // 
-            this.treeViewNodeShare.Name = "treeViewNodeShare";
-            this.treeViewNodeShare.Size = new System.Drawing.Size(180, 22);
-            this.treeViewNodeShare.Text = "Share";
-            this.treeViewNodeShare.Click += new System.EventHandler(this.treeViewNodeShare_Click);
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.lblStatus,
+            this.pbProgress});
+            this.statusStrip1.Location = new System.Drawing.Point(0, 433);
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Size = new System.Drawing.Size(800, 22);
+            this.statusStrip1.TabIndex = 2;
+            this.statusStrip1.Text = "statusStrip1";
+            // 
+            // lblStatus
+            // 
+            this.lblStatus.Margin = new System.Windows.Forms.Padding(0, 3, 10, 2);
+            this.lblStatus.Name = "lblStatus";
+            this.lblStatus.Size = new System.Drawing.Size(563, 17);
+            this.lblStatus.Spring = true;
+            this.lblStatus.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // pbProgress
+            // 
+            this.pbProgress.Margin = new System.Windows.Forms.Padding(1, 3, 11, 3);
+            this.pbProgress.Name = "pbProgress";
+            this.pbProgress.Size = new System.Drawing.Size(200, 16);
+            // 
+            // panel1
+            // 
+            this.panel1.Controls.Add(this.splitContainer);
+            this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panel1.Location = new System.Drawing.Point(0, 40);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(800, 393);
+            this.panel1.TabIndex = 3;
             // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 455);
-            this.Controls.Add(this.splitContainer);
+            this.Controls.Add(this.panel1);
+            this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.toolStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Main";
@@ -442,7 +508,11 @@
             this.tableLayoutPanel2.ResumeLayout(false);
             this.tableLayoutPanel2.PerformLayout();
             this.treeViewContextMenu.ResumeLayout(false);
+            this.statusStrip1.ResumeLayout(false);
+            this.statusStrip1.PerformLayout();
+            this.panel1.ResumeLayout(false);
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -478,5 +548,11 @@
         private ToolStripMenuItem treeViewNodeDelete;
         private Button btnSaveComments;
         private ToolStripMenuItem treeViewNodeShare;
+        private StatusStrip statusStrip1;
+        private Panel panel1;
+        private ToolStripStatusLabel lblStatus;
+        private ToolStripProgressBar pbProgress;
+        private ToolStripButton toolStripButton1;
+        private ToolStripButton toolStripButton2;
     }
 }

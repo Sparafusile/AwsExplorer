@@ -34,7 +34,6 @@
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.textBox1 = new System.Windows.Forms.TextBox();
-            this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.rbMinutes = new System.Windows.Forms.RadioButton();
             this.rbHours = new System.Windows.Forms.RadioButton();
@@ -43,6 +42,7 @@
             this.txtUrl = new System.Windows.Forms.TextBox();
             this.btnCancel = new System.Windows.Forms.Button();
             this.btnOkay = new System.Windows.Forms.Button();
+            this.label2 = new System.Windows.Forms.Label();
             this.tableLayoutPanel1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
@@ -135,16 +135,6 @@
             this.textBox1.Text = "Anyone can access the object with this presigned URL until it expires, even if th" +
     "e bucket, and object are private.";
             this.textBox1.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            // 
-            // label2
-            // 
-            this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(338, 210);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(331, 20);
-            this.label2.TabIndex = 2;
-            this.label2.Text = "You can share an object with a presigned URL for up to 12 hours.";
             // 
             // label1
             // 
@@ -241,6 +231,16 @@
             this.btnOkay.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
             this.btnOkay.UseVisualStyleBackColor = true;
             this.btnOkay.Click += new System.EventHandler(this.btnOkay_Click);
+            // 
+            // label2
+            // 
+            this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(338, 210);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(331, 20);
+            this.label2.TabIndex = 2;
+            this.label2.Text = "You can share an object with a presigned URL for up to 12 hours.";
             // 
             // ShareDialog
             // 
