@@ -100,7 +100,7 @@
             this.txtAwsAccessKey.Size = new System.Drawing.Size(276, 23);
             this.txtAwsAccessKey.TabIndex = 6;
             this.toolTip.SetToolTip(this.txtAwsAccessKey, "The AWS access key used to access the bucket.");
-            this.txtAwsAccessKey.Leave += new System.EventHandler(this.loadBuckets);
+            this.txtAwsAccessKey.Leave += new System.EventHandler(this.LoadBuckets);
             // 
             // label1
             // 
@@ -145,7 +145,7 @@
             this.txtAwsSecretKey.TabIndex = 7;
             this.toolTip.SetToolTip(this.txtAwsSecretKey, "The AWS secret key used to access the bucket.");
             this.txtAwsSecretKey.UseSystemPasswordChar = true;
-            this.txtAwsSecretKey.Leave += new System.EventHandler(this.loadBuckets);
+            this.txtAwsSecretKey.Leave += new System.EventHandler(this.LoadBuckets);
             // 
             // label5
             // 
@@ -204,7 +204,7 @@
             this.btnCancel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.btnCancel.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
             this.btnCancel.UseVisualStyleBackColor = true;
-            this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
+            this.btnCancel.Click += new System.EventHandler(this.BtnCancel_Click);
             // 
             // btnOkay
             // 
@@ -219,7 +219,7 @@
             this.btnOkay.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.btnOkay.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
             this.btnOkay.UseVisualStyleBackColor = true;
-            this.btnOkay.Click += new System.EventHandler(this.btnOkay_Click);
+            this.btnOkay.Click += new System.EventHandler(this.BtnOkay_Click);
             // 
             // label6
             // 
@@ -252,7 +252,7 @@
             this.btnRefreshBuckets.TabIndex = 14;
             this.toolTip.SetToolTip(this.btnRefreshBuckets, "Refresh the bucket list");
             this.btnRefreshBuckets.UseVisualStyleBackColor = true;
-            this.btnRefreshBuckets.Click += new System.EventHandler(this.loadBuckets);
+            this.btnRefreshBuckets.Click += new System.EventHandler(this.LoadBuckets);
             // 
             // btnAddBucket
             // 
@@ -264,7 +264,7 @@
             this.btnAddBucket.TabIndex = 15;
             this.toolTip.SetToolTip(this.btnAddBucket, "Create a new bucket");
             this.btnAddBucket.UseVisualStyleBackColor = true;
-            this.btnAddBucket.Click += new System.EventHandler(this.btnAddBucket_Click);
+            this.btnAddBucket.Click += new System.EventHandler(this.BtnAddBucket_Click);
             // 
             // cbRemoteBucket
             // 
@@ -296,7 +296,7 @@
             this.cbRegion.Name = "cbRegion";
             this.cbRegion.Size = new System.Drawing.Size(276, 23);
             this.cbRegion.TabIndex = 18;
-            this.cbRegion.SelectedIndexChanged += new System.EventHandler(this.loadBuckets);
+            this.cbRegion.SelectedIndexChanged += new System.EventHandler(this.LoadBuckets);
             // 
             // toolTip
             // 

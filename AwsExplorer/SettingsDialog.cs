@@ -19,13 +19,13 @@ public partial class SettingsDialog : Form
         this.cbMinimizeAction.SelectedItem = Settings.MinimizeAction;
     }
 
-    private void btnCancel_Click( object sender, EventArgs e )
+    private void BtnCancel_Click( object sender, EventArgs e )
     {
         this.DialogResult = DialogResult.Cancel;
         this.Close();
     }
 
-    private void btnOkay_Click( object sender, EventArgs e )
+    private void BtnOkay_Click( object sender, EventArgs e )
     {
         this.DialogResult = DialogResult.OK;
         this.Settings.UserName = this.txtYourName.Text;

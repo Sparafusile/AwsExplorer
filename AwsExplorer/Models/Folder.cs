@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Windows.Forms;
 
 namespace Explorer.Models;
 
@@ -21,6 +22,10 @@ public class Folder : IEqualityComparer<Folder>
     public Folder()
     {
         this.Links = new List<LocalLink>();
+
+        this.AwsAccessKey = this.AwsSecretKey = string.Empty;
+        this.Bucket = this.Prefix = string.Empty;
+        this.Region = "us-east-1";
     }
 
     public Folder Clone()
@@ -63,6 +68,28 @@ public class Folder : IEqualityComparer<Folder>
         }
         else return this.Bucket;
     }
+
+    public string? GetLocalPath( string Key )
+    {
+        if( this.Links == null ) return null;
+
+        return this.Links
+            .OrderByDescending( m => m.Prefix.Length )
+            .Select( m => m.GetLocalPath( Key ) )
+            .Where( m => !string.IsNullOrWhiteSpace( m ) )
+            .FirstOrDefault();
+    }
+
+    public string? GetRemoteKey( string Path )
+    {
+        if( this.Links == null ) return null;
+
+        return this.Links
+            .OrderByDescending( m => m.Path.Length )
+            .Select( m => m.GetLocalPath( Path ) )
+            .Where( m => !string.IsNullOrWhiteSpace( m ) )
+            .FirstOrDefault();
+    }
 }
 
 public class LocalLink
@@ -79,6 +106,28 @@ public class LocalLink
     {
         Prefix = prefix;
         Path = path;
+    }
+
+    public string? GetLocalPath( string KeyOrPrefix )
+    {
+        if( !KeyOrPrefix.StartsWith( this.Prefix ) ) return null;
+
+        var path = KeyOrPrefix;
+
+        if( path != this.Prefix ) path = path[( this.Prefix.Length )..];
+        else path = path.Split( "/" ).Last();
+
+        if( path.StartsWith( "/" ) ) path = path[1..];
+
+        path = path.Replace( "/", "\\" );
+
+        return System.IO.Path.Combine( this.Path, path );
+    }
+
+    public string? GetRemoteKey( string Path )
+    {
+        if( !Path.StartsWith( this.Path ) ) return null;
+        return this.Prefix + Path[this.Path.Length..].Replace( "\\", "/" );
     }
 }
 

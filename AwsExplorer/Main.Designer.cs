@@ -35,7 +35,7 @@
             this.tbAddFolder = new System.Windows.Forms.ToolStripButton();
             this.tbSync = new System.Windows.Forms.ToolStripButton();
             this.tbDownload = new System.Windows.Forms.ToolStripButton();
-            this.toolStripButton2 = new System.Windows.Forms.ToolStripButton();
+            this.tbUpload = new System.Windows.Forms.ToolStripButton();
             this.tbCollapseAll = new System.Windows.Forms.ToolStripButton();
             this.tbViewLogs = new System.Windows.Forms.ToolStripButton();
             this.tbFontIncrease = new System.Windows.Forms.ToolStripButton();
@@ -87,7 +87,7 @@
             this.tbAddFolder,
             this.tbSync,
             this.tbDownload,
-            this.toolStripButton2,
+            this.tbUpload,
             this.tbCollapseAll,
             this.tbViewLogs,
             this.tbFontIncrease,
@@ -108,7 +108,7 @@
             this.tbSettings.Name = "tbSettings";
             this.tbSettings.Size = new System.Drawing.Size(36, 37);
             this.tbSettings.Text = "Settings";
-            this.tbSettings.Click += new System.EventHandler(this.tbSettings_Click);
+            this.tbSettings.Click += new System.EventHandler(this.TbSettings_Click);
             // 
             // tbAddFolder
             // 
@@ -120,7 +120,7 @@
             this.tbAddFolder.Name = "tbAddFolder";
             this.tbAddFolder.Size = new System.Drawing.Size(37, 37);
             this.tbAddFolder.Text = "Add Folder";
-            this.tbAddFolder.Click += new System.EventHandler(this.tbAddFolder_Click);
+            this.tbAddFolder.Click += new System.EventHandler(this.TbAddFolder_Click);
             // 
             // tbSync
             // 
@@ -132,7 +132,7 @@
             this.tbSync.Name = "tbSync";
             this.tbSync.Size = new System.Drawing.Size(37, 37);
             this.tbSync.Text = "Refresh Files";
-            this.tbSync.Click += new System.EventHandler(this.tbSync_Click);
+            this.tbSync.Click += new System.EventHandler(this.TbSync_Click);
             // 
             // tbDownload
             // 
@@ -144,19 +144,19 @@
             this.tbDownload.Name = "tbDownload";
             this.tbDownload.Size = new System.Drawing.Size(37, 37);
             this.tbDownload.Text = "Sync Files to Computer";
-            this.tbDownload.Click += new System.EventHandler(this.tbDownload_Click);
+            this.tbDownload.Click += new System.EventHandler(this.TbDownload_Click);
             // 
-            // toolStripButton2
+            // tbUpload
             // 
-            this.toolStripButton2.AutoSize = false;
-            this.toolStripButton2.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.toolStripButton2.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton2.Image")));
-            this.toolStripButton2.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
-            this.toolStripButton2.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolStripButton2.Name = "toolStripButton2";
-            this.toolStripButton2.Size = new System.Drawing.Size(37, 37);
-            this.toolStripButton2.Text = "Sync Files to Cloud";
-            this.toolStripButton2.Click += new System.EventHandler(this.toolStripButton2_Click);
+            this.tbUpload.AutoSize = false;
+            this.tbUpload.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tbUpload.Image = ((System.Drawing.Image)(resources.GetObject("tbUpload.Image")));
+            this.tbUpload.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+            this.tbUpload.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tbUpload.Name = "tbUpload";
+            this.tbUpload.Size = new System.Drawing.Size(37, 37);
+            this.tbUpload.Text = "Sync Files to Cloud";
+            this.tbUpload.Click += new System.EventHandler(this.TbUpload_Click);
             // 
             // tbCollapseAll
             // 
@@ -168,7 +168,7 @@
             this.tbCollapseAll.Name = "tbCollapseAll";
             this.tbCollapseAll.Size = new System.Drawing.Size(37, 37);
             this.tbCollapseAll.Text = "Collapse All";
-            this.tbCollapseAll.Click += new System.EventHandler(this.tbCollapseAll_Click);
+            this.tbCollapseAll.Click += new System.EventHandler(this.TbCollapseAll_Click);
             // 
             // tbViewLogs
             // 
@@ -180,7 +180,7 @@
             this.tbViewLogs.Name = "tbViewLogs";
             this.tbViewLogs.Size = new System.Drawing.Size(37, 37);
             this.tbViewLogs.Text = "View Log";
-            this.tbViewLogs.Click += new System.EventHandler(this.tbViewLogs_Click);
+            this.tbViewLogs.Click += new System.EventHandler(this.TbViewLogs_Click);
             // 
             // tbFontIncrease
             // 
@@ -193,7 +193,7 @@
             this.tbFontIncrease.Size = new System.Drawing.Size(37, 37);
             this.tbFontIncrease.Text = "Increase Font Size";
             this.tbFontIncrease.Visible = false;
-            this.tbFontIncrease.Click += new System.EventHandler(this.tbFontIncrease_Click);
+            this.tbFontIncrease.Click += new System.EventHandler(this.TbFontIncrease_Click);
             // 
             // tbFontDecrease
             // 
@@ -206,7 +206,7 @@
             this.tbFontDecrease.Size = new System.Drawing.Size(37, 37);
             this.tbFontDecrease.Text = "Decrease Font Size";
             this.tbFontDecrease.Visible = false;
-            this.tbFontDecrease.Click += new System.EventHandler(this.tbFontDecrease_Click);
+            this.tbFontDecrease.Click += new System.EventHandler(this.TbFontDecrease_Click);
             // 
             // splitContainer
             // 
@@ -224,7 +224,7 @@
             this.splitContainer.Size = new System.Drawing.Size(800, 393);
             this.splitContainer.SplitterDistance = 389;
             this.splitContainer.TabIndex = 1;
-            this.splitContainer.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this.splitContainer_SplitterMoved);
+            this.splitContainer.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this.SplitContainer_SplitterMoved);
             // 
             // tableLayoutPanel1
             // 
@@ -250,11 +250,11 @@
             this.treeView.PathSeparator = "/";
             this.treeView.Size = new System.Drawing.Size(383, 357);
             this.treeView.TabIndex = 0;
-            this.treeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView_AfterSelect);
-            this.treeView.DragDrop += new System.Windows.Forms.DragEventHandler(this.treeView_DragDrop);
-            this.treeView.DragEnter += new System.Windows.Forms.DragEventHandler(this.treeView_DragEnter);
-            this.treeView.DragOver += new System.Windows.Forms.DragEventHandler(this.treeView_DragOver);
-            this.treeView.MouseUp += new System.Windows.Forms.MouseEventHandler(this.treeView_MouseUp);
+            this.treeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.TreeView_AfterSelect);
+            this.treeView.DragDrop += new System.Windows.Forms.DragEventHandler(this.TreeView_DragDrop);
+            this.treeView.DragEnter += new System.Windows.Forms.DragEventHandler(this.TreeView_DragEnter);
+            this.treeView.DragOver += new System.Windows.Forms.DragEventHandler(this.TreeView_DragOver);
+            this.treeView.MouseUp += new System.Windows.Forms.MouseEventHandler(this.TreeView_MouseUp);
             // 
             // cbFolder
             // 
@@ -266,8 +266,8 @@
             this.cbFolder.Name = "cbFolder";
             this.cbFolder.Size = new System.Drawing.Size(383, 23);
             this.cbFolder.TabIndex = 1;
-            this.cbFolder.SelectedIndexChanged += new System.EventHandler(this.cbFolder_SelectedIndexChanged);
-            this.cbFolder.KeyUp += new System.Windows.Forms.KeyEventHandler(this.cbFolder_KeyUp);
+            this.cbFolder.SelectedIndexChanged += new System.EventHandler(this.CbFolder_SelectedIndexChanged);
+            this.cbFolder.KeyUp += new System.Windows.Forms.KeyEventHandler(this.CbFolder_KeyUp);
             // 
             // tableLayoutPanel2
             // 
@@ -417,7 +417,7 @@
             this.btnSaveComments.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.btnSaveComments.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
             this.btnSaveComments.UseVisualStyleBackColor = true;
-            this.btnSaveComments.Click += new System.EventHandler(this.btnSaveComments_Click);
+            this.btnSaveComments.Click += new System.EventHandler(this.BtnSaveComments_Click);
             // 
             // treeViewContextMenu
             // 
@@ -435,21 +435,21 @@
             this.treeViewNodeDownload.Name = "treeViewNodeDownload";
             this.treeViewNodeDownload.Size = new System.Drawing.Size(128, 22);
             this.treeViewNodeDownload.Text = "Download";
-            this.treeViewNodeDownload.Click += new System.EventHandler(this.treeViewNodeDownload_Click);
+            this.treeViewNodeDownload.Click += new System.EventHandler(this.TreeViewNodeDownload_Click);
             // 
             // treeViewNodeShare
             // 
             this.treeViewNodeShare.Name = "treeViewNodeShare";
             this.treeViewNodeShare.Size = new System.Drawing.Size(128, 22);
             this.treeViewNodeShare.Text = "Share";
-            this.treeViewNodeShare.Click += new System.EventHandler(this.treeViewNodeShare_Click);
+            this.treeViewNodeShare.Click += new System.EventHandler(this.TreeViewNodeShare_Click);
             // 
             // treeViewNodeRename
             // 
             this.treeViewNodeRename.Name = "treeViewNodeRename";
             this.treeViewNodeRename.Size = new System.Drawing.Size(128, 22);
             this.treeViewNodeRename.Text = "Rename";
-            this.treeViewNodeRename.Click += new System.EventHandler(this.treeViewNodeRename_Click);
+            this.treeViewNodeRename.Click += new System.EventHandler(this.TreeViewNodeRename_Click);
             // 
             // toolStripMenuItem1
             // 
@@ -461,7 +461,7 @@
             this.treeViewNodeDelete.Name = "treeViewNodeDelete";
             this.treeViewNodeDelete.Size = new System.Drawing.Size(128, 22);
             this.treeViewNodeDelete.Text = "Delete";
-            this.treeViewNodeDelete.Click += new System.EventHandler(this.treeViewNodeDelete_Click);
+            this.treeViewNodeDelete.Click += new System.EventHandler(this.TreeViewNodeDelete_Click);
             // 
             // statusStrip1
             // 
@@ -502,7 +502,7 @@
             this.notifyIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon.Icon")));
             this.notifyIcon.Text = "AWS File Explorer";
             this.notifyIcon.Visible = true;
-            this.notifyIcon.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.notifyIcon_MouseDoubleClick);
+            this.notifyIcon.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.NotifyIcon_MouseDoubleClick);
             // 
             // Main
             // 
@@ -573,7 +573,7 @@
         private ToolStripStatusLabel lblStatus;
         private ToolStripProgressBar pbProgress;
         private ToolStripButton tbSync;
-        private ToolStripButton toolStripButton2;
+        private ToolStripButton tbUpload;
         private ToolStripButton tbCollapseAll;
         private NotifyIcon notifyIcon;
     }

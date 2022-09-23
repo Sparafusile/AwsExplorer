@@ -180,7 +180,7 @@
             this.btnCreateUrl.TabIndex = 5;
             this.btnCreateUrl.Text = "Generate URL";
             this.btnCreateUrl.UseVisualStyleBackColor = true;
-            this.btnCreateUrl.Click += new System.EventHandler(this.btnCreateUrl_Click);
+            this.btnCreateUrl.Click += new System.EventHandler(this.BtnCreateUrl_Click);
             // 
             // txtNumber
             // 
@@ -215,7 +215,7 @@
             this.btnCancel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.btnCancel.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
             this.btnCancel.UseVisualStyleBackColor = true;
-            this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
+            this.btnCancel.Click += new System.EventHandler(this.BtnCancel_Click);
             // 
             // btnOkay
             // 
@@ -230,7 +230,7 @@
             this.btnOkay.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.btnOkay.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
             this.btnOkay.UseVisualStyleBackColor = true;
-            this.btnOkay.Click += new System.EventHandler(this.btnOkay_Click);
+            this.btnOkay.Click += new System.EventHandler(this.BtnOkay_Click);
             // 
             // label2
             // 

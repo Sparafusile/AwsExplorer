@@ -1,9 +1,11 @@
+using System;
 using Amazon.S3;
 using Explorer.Models;
 using Amazon.S3.Model;
 using System.Text.Json;
 using Explorer.Classes;
 using System.Runtime.InteropServices;
+using System.Xml.Linq;
 
 namespace Explorer;
 
@@ -95,14 +97,14 @@ public partial class Main : Form
         }
     }
 
-    private void notifyIcon_MouseDoubleClick( object sender, MouseEventArgs e )
+    private void NotifyIcon_MouseDoubleClick( object sender, MouseEventArgs e )
     {
         this.WindowState = FormWindowState.Normal;
         this.notifyIcon.Visible = false;
         this.ShowInTaskbar = true;
     }
 
-    private void tbAddFolder_Click( object sender, EventArgs e )
+    private void TbAddFolder_Click( object sender, EventArgs e )
     {
         var d = new FolderDialog() { StartPosition = FormStartPosition.CenterParent };
         if( d.ShowDialog() != DialogResult.OK || d.Folder == null ) return;
@@ -113,10 +115,10 @@ public partial class Main : Form
 
         this.cbFolder.Items.Add( d.Folder );
         this.cbFolder.SelectedItem = d.Folder;
-        this.cbFolder_SelectedIndexChanged();
+        this.CbFolder_SelectedIndexChanged();
     }
 
-    private async void cbFolder_SelectedIndexChanged( object? sender = null, EventArgs? e = null )
+    private async void CbFolder_SelectedIndexChanged( object? sender = null, EventArgs? e = null )
     {
         await this.LoadRemoteFiles( false );
     }
@@ -139,7 +141,7 @@ public partial class Main : Form
         this.pbProgress.Value = 0;
 
         if( this.S3Client != null ) this.S3Client.Dispose();
-        var region = Amazon.RegionEndpoint.GetBySystemName( this.Folder.Region );
+        var region = Amazon.RegionEndpoint.GetBySystemName( this.Folder.Region ?? "us-east-1" );
         this.S3Client = new AmazonS3Client( this.Folder.AwsAccessKey, this.Folder.AwsSecretKey, region );
 
         this.treeView.Nodes.Clear();
@@ -165,7 +167,7 @@ public partial class Main : Form
         }
     }
 
-    private void tbSettings_Click( object sender, EventArgs e )
+    private void TbSettings_Click( object sender, EventArgs e )
     {
         this.Settings ??= new Settings();
         var d = new SettingsDialog( this.Settings ) { StartPosition = FormStartPosition.CenterParent };
@@ -173,24 +175,24 @@ public partial class Main : Form
         this.SaveSettings();
     }
 
-    private void tbFontIncrease_Click( object sender, EventArgs e )
+    private void TbFontIncrease_Click( object sender, EventArgs e )
     {
         this.SetFontSize( this.treeView.Font.Size + 1 );
         this.SaveSettings();
     }
 
-    private void tbFontDecrease_Click( object sender, EventArgs e )
+    private void TbFontDecrease_Click( object sender, EventArgs e )
     {
         this.SetFontSize( this.treeView.Font.Size - 1 );
         this.SaveSettings();
     }
 
-    private async void tbSync_Click( object sender, EventArgs e )
+    private async void TbSync_Click( object sender, EventArgs e )
     {
         await this.LoadRemoteFiles( true );
     }
 
-    private async void tbDownload_Click( object sender, EventArgs e )
+    private async void TbDownload_Click( object sender, EventArgs e )
     {
         if( this.Folder?.Links == null ) return;
 
@@ -200,7 +202,7 @@ public partial class Main : Form
         }
     }
 
-    private async void toolStripButton2_Click( object sender, EventArgs e )
+    private async void TbUpload_Click( object sender, EventArgs e )
     {
         if( this.Folder?.Links == null ) return;
 
@@ -210,7 +212,7 @@ public partial class Main : Form
         }
     }
 
-    private void tbViewLogs_Click( object sender, EventArgs e )
+    private void TbViewLogs_Click( object sender, EventArgs e )
     {
         var fullPath = !string.IsNullOrEmpty( this.Settings?.LogFilePath )
             ? Path.Combine( this.Settings.LogFilePath, LogFileName )
@@ -221,19 +223,19 @@ public partial class Main : Form
         System.Diagnostics.Process.Start( "notepad.exe", fullPath );
     }
 
-    private void tbCollapseAll_Click( object sender, EventArgs e )
+    private void TbCollapseAll_Click( object sender, EventArgs e )
     {
         this.treeView.CollapseAll();
     }
 
-    private void splitContainer_SplitterMoved( object sender, SplitterEventArgs e )
+    private void SplitContainer_SplitterMoved( object sender, SplitterEventArgs e )
     {
         if( this.Settings == null ) return;
         this.Settings.TreeViewWidth = this.splitContainer.SplitterDistance;
         this.SaveSettings();
     }
 
-    private async void treeView_AfterSelect( object sender, TreeViewEventArgs e )
+    private async void TreeView_AfterSelect( object sender, TreeViewEventArgs e )
     {
         if( e.Node == null ) return;
 
@@ -271,7 +273,7 @@ public partial class Main : Form
         }
     }
 
-    private void treeView_MouseUp( object sender, MouseEventArgs e )
+    private void TreeView_MouseUp( object sender, MouseEventArgs e )
     {
         if( e.Button == MouseButtons.Right )
         {
@@ -284,51 +286,43 @@ public partial class Main : Form
         }
     }
 
-    private async void treeViewNodeDelete_Click( object sender, EventArgs e )
+    private async void TreeViewNodeDelete_Click( object sender, EventArgs e )
     {
-        if( this.S3Client == null ) return;
+        if( this.Settings == null || this.S3Client == null || this.Folder == null ) return;
 
         var confirmResult = MessageBox.Show( "Are you sure to delete this item? It will be deleted from the S3 bucket and your local computer.", "Confirm Delete", MessageBoxButtons.YesNo );
         if( confirmResult != DialogResult.Yes ) return;
 
-        async Task DeleteFolder( TreeNode node )
-        {
-            this.Log( "Deleting all files with a prefix '" + node.Tag.ToString() + "'" );
+        var DeleteKeys = new List<string>();
 
-            for( var n = node.FirstNode ; n != null ; n = n.NextNode )
-            {
-                if( n.Nodes.Count > 0 )
-                {
-                    await DeleteFolder( n );
-                }
-                else
-                {
-                    await DeleteFile( n );
-                }
-            }
+        if( this.treeView.SelectedNode.Tag is S3Object )
+        {
+            DeleteKeys.Add( this.treeView.SelectedNode.GetKey( this.Folder.Prefix ) );
+        }
+        else if( this.treeView.SelectedNode.Tag is string )
+        {
+            DeleteKeys.AddRange( this.treeView.SelectedNode.GetKeys( this.Folder.Prefix ) );
         }
 
-        async Task DeleteFile( TreeNode node )
+        foreach( var key in DeleteKeys )
         {
-            if( this.Folder == null ) return;
-            if( node.Tag is not S3Object s3Object ) return;
-            this.Log( "Deleting key '" + s3Object.Key + "'" );
-            await this.S3Client.DeleteAsync( this.Folder.Bucket, s3Object.Key, null );
+            this.Log( $"Deleting key '{key}'" );
+            await this.S3Client.DeleteAsync( this.Folder.Bucket, key, null );
+
+            // Delete the file on the local computer, if it exists
+            var LocalPath = this.Folder.GetLocalPath( key );
+            if( LocalPath != null && File.Exists( LocalPath ) )
+            {
+                Log( $"Deleting local file '{LocalPath}'" );
+                File.Delete( LocalPath );
+            }
 
             if( !this.Folder.DatFile ) return;
 
             // Delete the .dat file
-            var datKey = GetDatFileKey( s3Object.Key );
+            var datKey = GetDatFileKey( key );
+            this.Log( $"Deleting key '{datKey}'" );
             await this.S3Client.DeleteAsync( this.Folder.Bucket, datKey, null );
-        }
-
-        if( this.treeView.SelectedNode.Tag is S3Object s3Object )
-        {
-            await DeleteFile( this.treeView.SelectedNode );
-        }
-        else if( this.treeView.SelectedNode.Tag is string prefix )
-        {
-            await DeleteFolder( this.treeView.SelectedNode );
         }
 
         if( this.treeView.SelectedNode?.Parent?.Nodes != null )
@@ -341,67 +335,59 @@ public partial class Main : Form
         }
     }
 
-    private async void treeViewNodeRename_Click( object sender, EventArgs e )
+    private async void TreeViewNodeRename_Click( object sender, EventArgs e )
     {
         if( this.Settings == null || this.S3Client == null || this.Folder == null ) return;
 
         var d = new RenameDialog( this.treeView.SelectedNode.Text ) { StartPosition = FormStartPosition.CenterParent };
         if( d.ShowDialog() != DialogResult.OK ) return;
 
-        List<string> GetKeys( TreeNode node )
-        {
-            var keys = new List<string>();
-
-            for( var n = node.FirstNode ; n != null ; n = n.NextNode )
-            {
-                if( n.Nodes.Count > 0 )
-                {
-                    keys.AddRange( GetKeys( n ) );
-                }
-                else
-                {
-                    keys.Add( GetKey( n ) );
-                }
-            }
-
-            return keys;
-        }
-
-        string GetKey( TreeNode node )
-        {
-            var key = node.FullPath;
-            if( !string.IsNullOrWhiteSpace( this.Folder?.Prefix ) )
-            {
-                key = this.Folder.Prefix + key;
-            }
-            return key;
-        }
-
         var RenameKeys = new List<(string, string)>();
 
         if( this.treeView.SelectedNode.Tag is S3Object s3Object )
         {
-            var CurrentKey = GetKey( this.treeView.SelectedNode );
+            // Renaming a file
+            var CurrentKey = this.treeView.SelectedNode.GetKey( this.Folder.Prefix );
+            var CurrentPath = this.Folder.GetLocalPath( CurrentKey );
             this.treeView.SelectedNode.Text = d.Name;
-            var NewKey = GetKey( this.treeView.SelectedNode );
+            var NewKey = this.treeView.SelectedNode.GetKey( this.Folder.Prefix );
 
             RenameKeys.Add( (CurrentKey, NewKey) );
 
             s3Object.Key = NewKey;
             this.lblKey.Text = NewKey;
+
+            if( CurrentPath != null && File.Exists( CurrentPath ) )
+            {
+                var NewPath = this.Folder.GetLocalPath( NewKey );
+                if( NewPath != null ) File.Move( CurrentPath, NewPath );
+            }
         }
-        else if( this.treeView.SelectedNode.Tag is string prefix )
+        else if( this.treeView.SelectedNode.Tag is string )
         {
-            var CurrentKeys = GetKeys( this.treeView.SelectedNode );
+            // Renaming a folder
+            var CurrentKeys = this.treeView.SelectedNode.GetKeys( this.Folder.Prefix );
+            var CurrentPath = this.Folder.GetLocalPath( this.treeView.SelectedNode.GetKey( this.Folder.Prefix ) );
             this.treeView.SelectedNode.Text = d.Name;
-            var NewKeys = GetKeys( this.treeView.SelectedNode );
+            var NewKeys = this.treeView.SelectedNode.GetKeys( this.Folder.Prefix );
 
             RenameKeys.AddRange( CurrentKeys.Zip( NewKeys ) );
+
+            if( CurrentPath != null && Directory.Exists( CurrentPath ) )
+            {
+                var NewPath = this.Folder.GetLocalPath( this.treeView.SelectedNode.GetKey( this.Folder.Prefix ) );
+                if( NewPath != null ) Directory.Move( CurrentPath, NewPath );
+            }
         }
+
+        this.pbProgress.Value = 0;
+        this.pbProgress.Minimum = 0;
+        this.pbProgress.Maximum = RenameKeys.Count;
 
         foreach( var tuple in RenameKeys )
         {
             this.Log( $"Renaming '{tuple.Item1}' to '{tuple.Item2}'" );
+            this.lblStatus.Text = $"Renaming '{tuple.Item1}'";
 
             Task task = this.S3Client.CopyObjectAsync
             (
@@ -441,10 +427,14 @@ public partial class Main : Form
             }
 
             await task;
+            this.pbProgress.Value++;
         }
+
+        this.lblStatus.Text = $"All files renamed";
+        this.pbProgress.Value = this.pbProgress.Maximum;
     }
 
-    private void treeViewNodeShare_Click( object sender, EventArgs e )
+    private void TreeViewNodeShare_Click( object sender, EventArgs e )
     {
         if( this.Settings == null || this.S3Client == null || this.Folder == null ) return;
 
@@ -460,7 +450,7 @@ public partial class Main : Form
         if( d.ShowDialog() != DialogResult.OK ) return;
     }
 
-    private async void treeViewNodeDownload_Click( object sender, EventArgs e )
+    private async void TreeViewNodeDownload_Click( object sender, EventArgs e )
     {
         if( this.Settings == null || this.S3Client == null || this.Folder == null ) return;
 
@@ -502,7 +492,7 @@ public partial class Main : Form
         await this.SyncDown( link );
     }
 
-    private void treeView_DragEnter( object sender, DragEventArgs e )
+    private void TreeView_DragEnter( object sender, DragEventArgs e )
     {
         e.Effect = this.Folder == null ? DragDropEffects.None : DragDropEffects.All;
     }
@@ -510,7 +500,7 @@ public partial class Main : Form
     private TreeNode? lastDragDestination = null;
     private DateTime lastDragDestinationTime = default;
 
-    private void treeView_DragOver( object sender, DragEventArgs e )
+    private void TreeView_DragOver( object sender, DragEventArgs e )
     {
         var targetPoint = this.treeView.PointToClient( new Point( e.X, e.Y ) );
         var node = this.treeView.GetNodeAt( targetPoint );
@@ -542,7 +532,7 @@ public partial class Main : Form
         }
     }
 
-    private async void treeView_DragDrop( object sender, DragEventArgs e )
+    private async void TreeView_DragDrop( object sender, DragEventArgs e )
     {
         if( e.Data == null || this.Folder == null || this.S3Client == null ) return;
 
@@ -580,7 +570,7 @@ public partial class Main : Form
 
                 foreach( var file in files )
                 {
-                    var relativePath = file.Substring( path.Length );
+                    var relativePath = file[path.Length..];
                     var key = tempPrefix + relativePath.Replace( "\\", "/" );
                     objects.Add( (file, key) );
                 }
@@ -614,7 +604,7 @@ public partial class Main : Form
         this.pbProgress.Value = this.pbProgress.Maximum;
     }
 
-    private void cbFolder_KeyUp( object sender, KeyEventArgs e )
+    private void CbFolder_KeyUp( object sender, KeyEventArgs e )
     {
         if( sender is not ComboBox cb ) return;
         if( cb.SelectedItem is not Models.Folder folder ) return;
@@ -644,7 +634,7 @@ public partial class Main : Form
         }
     }
 
-    private async void btnSaveComments_Click( object sender, EventArgs e )
+    private async void BtnSaveComments_Click( object sender, EventArgs e )
     {
         if( this.S3Client == null || this.Folder == null ) return;
         if( this.treeView.SelectedNode?.Tag is not S3Object obj ) return;
@@ -993,18 +983,12 @@ public partial class Main : Form
                 continue;
             }
 
-            var path = obj.Key;
-
-            if( path != link.Prefix ) path = path[( link.Prefix.Length )..];
-            else path = path.Split( "/" ).Last();
-
-            if( path.StartsWith( "/" ) ) path = path[1..];
-
-            this.lblStatus.Text = $"Downloading {path}";
-
-            path = Path.Combine( link.Path, path.Replace( "/", "\\" ) );
+            var path = link.GetLocalPath( obj.Key );
+            if( string.IsNullOrWhiteSpace( path ) ) return;
 
             var info = new FileInfo( path );
+            this.lblStatus.Text = $"Downloading {info.Name}";
+
             if( File.Exists( path ) && info.LastWriteTimeUtc > obj.LastModified )
             {
                 // Local file is newer, don't overwrite it
@@ -1037,7 +1021,7 @@ public partial class Main : Form
         foreach( var file in files )
         {
             var info = new FileInfo( file );
-            var key = link.Prefix + file[link.Path.Length..].Replace( "\\", "/" );
+            var key = link.GetRemoteKey( file );
             var s3Object = objects.FirstOrDefault( m => string.Equals( key, m.Key ) );
 
             if( s3Object != null && s3Object.LastModified.ToUniversalTime() >= info.LastWriteTimeUtc )
@@ -1072,5 +1056,37 @@ public partial class Main : Form
 
         this.pbProgress.Value = this.pbProgress.Maximum;
         this.lblStatus.Text = "All files uploaded";
+    }
+}
+
+public static partial class ExtensionMethods
+{
+    public static string GetKey( this TreeNode node, string? Prefix )
+    {
+        var key = node.FullPath;
+        if( !string.IsNullOrWhiteSpace( Prefix ) )
+        {
+            key = Prefix + key;
+        }
+        return key;
+    }
+
+    public static List<string> GetKeys( this TreeNode node, string? Prefix )
+    {
+        var keys = new List<string>();
+
+        for( var n = node.FirstNode ; n != null ; n = n.NextNode )
+        {
+            if( n.Nodes.Count > 0 )
+            {
+                keys.AddRange( n.GetKeys( Prefix ) );
+            }
+            else
+            {
+                keys.Add( n.GetKey( Prefix ) );
+            }
+        }
+
+        return keys;
     }
 }

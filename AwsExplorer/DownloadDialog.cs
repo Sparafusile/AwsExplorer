@@ -11,22 +11,24 @@ public partial class DownloadDialog : Form
     public DownloadDialog()
     {
         InitializeComponent();
+
+        this.Directory = string.Empty;
     }
 
-    private void btnDestination_Click( object sender, EventArgs e )
+    private void BtnDestination_Click( object sender, EventArgs e )
     {
         var result = this.folderBrowserDialog.ShowDialog( this );
         if( result != DialogResult.OK ) return;
         this.txtDestination.Text = this.folderBrowserDialog.SelectedPath;
     }
 
-    private void btnCancel_Click( object sender, EventArgs e )
+    private void BtnCancel_Click( object sender, EventArgs e )
     {
         this.DialogResult = DialogResult.Cancel;
         this.Close();
     }
 
-    private void btnOkay_Click( object sender, EventArgs e )
+    private void BtnOkay_Click( object sender, EventArgs e )
     {
         this.Directory = this.txtDestination.Text;
         this.Download = this.rbDownload.Checked || this.rbBoth.Checked;

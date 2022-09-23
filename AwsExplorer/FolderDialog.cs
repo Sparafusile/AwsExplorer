@@ -27,15 +27,15 @@ public partial class FolderDialog : Form
         this.txtFilePrefix.Text = Folder.Prefix;
         this.cbOptions.Checked = Folder.DatFile;
 
-        this.loadBuckets();
+        this.LoadBuckets();
     }
 
-    private void btnOkay_Click( object sender, EventArgs e )
+    private void BtnOkay_Click( object sender, EventArgs e )
     {
         this.Folder ??= new Models.Folder();
         this.Folder.AwsAccessKey = this.txtAwsAccessKey.Text;
         this.Folder.AwsSecretKey = this.txtAwsSecretKey.Text;
-        this.Folder.Bucket = this.cbRemoteBucket.SelectedItem as string;
+        this.Folder.Bucket = (string)this.cbRemoteBucket.SelectedItem;
         this.Folder.Prefix = this.txtFilePrefix.Text;
         this.Folder.DatFile = this.cbOptions.Checked;
 
@@ -43,13 +43,13 @@ public partial class FolderDialog : Form
         this.Close();
     }
 
-    private void btnCancel_Click( object sender, EventArgs e )
+    private void BtnCancel_Click( object sender, EventArgs e )
     {
         this.DialogResult = DialogResult.Cancel;
         this.Close();
     }
 
-    private async void btnAddBucket_Click( object sender, EventArgs e )
+    private async void BtnAddBucket_Click( object sender, EventArgs e )
     {
         if( string.IsNullOrWhiteSpace( this.txtAwsAccessKey.Text ) || string.IsNullOrWhiteSpace( this.txtAwsSecretKey.Text ) )
         {
@@ -60,7 +60,7 @@ public partial class FolderDialog : Form
         var d = new RenameDialog( string.Empty, "New Bucket Name", "Create" ) { StartPosition = FormStartPosition.CenterParent };
         if( d.ShowDialog() != DialogResult.OK || string.IsNullOrWhiteSpace( d.Name ) ) return;
 
-        var region = Amazon.RegionEndpoint.GetBySystemName( this.Folder.Region );
+        var region = Amazon.RegionEndpoint.GetBySystemName( this.Folder?.Region ?? "us-east-1" );
         using var S3Client = new AmazonS3Client( this.txtAwsAccessKey.Text, this.txtAwsSecretKey.Text, region );
 
         try
@@ -73,7 +73,7 @@ public partial class FolderDialog : Form
         }
     }
 
-    private async void loadBuckets( object? sender = null, EventArgs? e = null )
+    private async void LoadBuckets( object? sender = null, EventArgs? e = null )
     {
         if( string.IsNullOrWhiteSpace( this.txtAwsAccessKey.Text ) || string.IsNullOrWhiteSpace( this.txtAwsSecretKey.Text ) || this.cbRegion.SelectedItem == null )
         {
@@ -82,7 +82,7 @@ public partial class FolderDialog : Form
 
         try
         {
-            var region = Amazon.RegionEndpoint.GetBySystemName( this.cbRegion.SelectedItem as string );
+            var region = Amazon.RegionEndpoint.GetBySystemName( this.cbRegion.SelectedItem as string ?? "us-east-1" );
             using var S3Client = new AmazonS3Client( this.txtAwsAccessKey.Text, this.txtAwsSecretKey.Text, region );
 
             var results = await S3Client.ListBucketsAsync();

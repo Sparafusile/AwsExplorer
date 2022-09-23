@@ -58,7 +58,7 @@ internal static class NativeMethods
         public string szTypeName;
     };
 
-    [DllImport( "shell32" )]
+    [DllImport( "shell32", CharSet = CharSet.Unicode )]
     public static extern IntPtr SHGetFileInfo( string pszPath, uint dwFileAttributes, ref SHFILEINFO psfi, uint cbSizeFileInfo, uint uFlags );
 
     [DllImport( "uxtheme", CharSet = CharSet.Unicode )]

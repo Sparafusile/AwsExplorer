@@ -21,19 +21,19 @@ public partial class ShareDialog : Form
         this.Folder = Folder;
     }
 
-    private void btnCancel_Click( object sender, EventArgs e )
+    private void BtnCancel_Click( object sender, EventArgs e )
     {
         this.DialogResult = DialogResult.Cancel;
         this.Close();
     }
 
-    private void btnOkay_Click( object sender, EventArgs e )
+    private void BtnOkay_Click( object sender, EventArgs e )
     {
         this.DialogResult = DialogResult.OK;
         this.Close();
     }
 
-    private void btnCreateUrl_Click( object sender, EventArgs e )
+    private void BtnCreateUrl_Click( object sender, EventArgs e )
     {
         if( !int.TryParse( this.txtNumber.Text, out int n ) ) return;
 

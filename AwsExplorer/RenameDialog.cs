@@ -2,7 +2,7 @@
 
 public partial class RenameDialog : Form
 {
-    public string Name { get; set; }
+    public new string Name { get; set; }
 
     public RenameDialog( string Name, string Title = "Renaming", string OkayButtonText = "Okay" )
     {
@@ -14,13 +14,13 @@ public partial class RenameDialog : Form
         this.btnOkay.Text = OkayButtonText;
     }
 
-    private void btnCancel_Click( object sender, EventArgs e )
+    private void BtnCancel_Click( object sender, EventArgs e )
     {
         this.DialogResult = DialogResult.Cancel;
         this.Close();
     }
 
-    private void btnOkay_Click( object sender, EventArgs e )
+    private void BtnOkay_Click( object sender, EventArgs e )
     {
         this.Name = this.txtName.Text;
         this.DialogResult = DialogResult.OK;
