@@ -13,13 +13,13 @@ AwsExplorer allows a user to manage files located in a remote AWS S3 bucket, upl
 
 ## Upload files or folders to S3
 
-Uploading files or folders to S3 using AwsExplorer is as easy as dragging them onto the TreeView component on the left-hand side of the window. If you elected to track chagnes and comments on files, an entry will be created to who when and how uploaded the file.
+Uploading files or folders to S3 using AwsExplorer is as easy as dragging them onto the TreeView component on the left-hand side of the window. If you elected to track changes and comments on files, an entry will be created listing who and when uploaded the file.
 
 ## Download files from S3 to your computer
 
 ![Download Screen](Screenshots/DownloadScreen.png)
 
-You can download a file or a folder to your location computer by right-clicking on it in the TreeView on the left-hand side of the window and choosing 'Download' from the context menu. On the dialog that appears, you can choose when you want the file or folder to be downloaded to your computer and whether or not to keep the files in sync. There are three options for syncing files:
+You can download a file or a folder to your local computer by right-clicking on it in the TreeView on the left-hand side of the window and choosing 'Download' from the context menu. On the dialog that appears, you can choose where you want the file or folder to be downloaded to your computer and whether or not to keep the files in sync. There are three options for syncing files:
 
 - None: No file sync will occur. You are only downloading files from S3.
 - Download: This keeps the files you have downloaded in sync with any changes in the files in S3. Any local changes you make will not be transfered to S3.
