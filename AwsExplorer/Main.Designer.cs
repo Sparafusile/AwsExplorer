@@ -36,6 +36,7 @@
             this.tbSync = new System.Windows.Forms.ToolStripButton();
             this.tbDownload = new System.Windows.Forms.ToolStripButton();
             this.tbUpload = new System.Windows.Forms.ToolStripButton();
+            this.tbMoveBucket = new System.Windows.Forms.ToolStripButton();
             this.tbCollapseAll = new System.Windows.Forms.ToolStripButton();
             this.tbViewLogs = new System.Windows.Forms.ToolStripButton();
             this.tbFontIncrease = new System.Windows.Forms.ToolStripButton();
@@ -88,6 +89,7 @@
             this.tbSync,
             this.tbDownload,
             this.tbUpload,
+            this.tbMoveBucket,
             this.tbCollapseAll,
             this.tbViewLogs,
             this.tbFontIncrease,
@@ -157,6 +159,19 @@
             this.tbUpload.Size = new System.Drawing.Size(37, 37);
             this.tbUpload.Text = "Sync Files to Cloud";
             this.tbUpload.Click += new System.EventHandler(this.TbUpload_Click);
+            // 
+            // tbMoveBucket
+            // 
+            this.tbMoveBucket.AutoSize = false;
+            this.tbMoveBucket.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tbMoveBucket.Image = ((System.Drawing.Image)(resources.GetObject("tbMoveBucket.Image")));
+            this.tbMoveBucket.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+            this.tbMoveBucket.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tbMoveBucket.Name = "tbMoveBucket";
+            this.tbMoveBucket.Size = new System.Drawing.Size(37, 37);
+            this.tbMoveBucket.Text = "toolStripButton1";
+            this.tbMoveBucket.ToolTipText = "Move File to Another Bucket";
+            this.tbMoveBucket.Click += new System.EventHandler(this.TbMoveBucket_Click);
             // 
             // tbCollapseAll
             // 
@@ -245,6 +260,7 @@
             // 
             this.treeView.AllowDrop = true;
             this.treeView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.treeView.HideSelection = false;
             this.treeView.Location = new System.Drawing.Point(3, 33);
             this.treeView.Name = "treeView";
             this.treeView.PathSeparator = "/";
@@ -403,6 +419,7 @@
             this.txtHistory.Size = new System.Drawing.Size(401, 100);
             this.txtHistory.TabIndex = 9;
             this.txtHistory.WordWrap = false;
+            this.txtHistory.Click += new System.EventHandler(this.TxtHistory_Click);
             // 
             // btnSaveComments
             // 
@@ -428,38 +445,38 @@
             this.toolStripMenuItem1,
             this.treeViewNodeDelete});
             this.treeViewContextMenu.Name = "treeViewContextMenu";
-            this.treeViewContextMenu.Size = new System.Drawing.Size(129, 98);
+            this.treeViewContextMenu.Size = new System.Drawing.Size(138, 98);
             // 
             // treeViewNodeDownload
             // 
             this.treeViewNodeDownload.Name = "treeViewNodeDownload";
-            this.treeViewNodeDownload.Size = new System.Drawing.Size(128, 22);
-            this.treeViewNodeDownload.Text = "Download";
+            this.treeViewNodeDownload.Size = new System.Drawing.Size(137, 22);
+            this.treeViewNodeDownload.Text = "Download...";
             this.treeViewNodeDownload.Click += new System.EventHandler(this.TreeViewNodeDownload_Click);
             // 
             // treeViewNodeShare
             // 
             this.treeViewNodeShare.Name = "treeViewNodeShare";
-            this.treeViewNodeShare.Size = new System.Drawing.Size(128, 22);
-            this.treeViewNodeShare.Text = "Share";
+            this.treeViewNodeShare.Size = new System.Drawing.Size(137, 22);
+            this.treeViewNodeShare.Text = "Share...";
             this.treeViewNodeShare.Click += new System.EventHandler(this.TreeViewNodeShare_Click);
             // 
             // treeViewNodeRename
             // 
             this.treeViewNodeRename.Name = "treeViewNodeRename";
-            this.treeViewNodeRename.Size = new System.Drawing.Size(128, 22);
-            this.treeViewNodeRename.Text = "Rename";
+            this.treeViewNodeRename.Size = new System.Drawing.Size(137, 22);
+            this.treeViewNodeRename.Text = "Rename...";
             this.treeViewNodeRename.Click += new System.EventHandler(this.TreeViewNodeRename_Click);
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(125, 6);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(134, 6);
             // 
             // treeViewNodeDelete
             // 
             this.treeViewNodeDelete.Name = "treeViewNodeDelete";
-            this.treeViewNodeDelete.Size = new System.Drawing.Size(128, 22);
+            this.treeViewNodeDelete.Size = new System.Drawing.Size(137, 22);
             this.treeViewNodeDelete.Text = "Delete";
             this.treeViewNodeDelete.Click += new System.EventHandler(this.TreeViewNodeDelete_Click);
             // 
@@ -576,5 +593,6 @@
         private ToolStripButton tbUpload;
         private ToolStripButton tbCollapseAll;
         private NotifyIcon notifyIcon;
+        private ToolStripButton tbMoveBucket;
     }
 }

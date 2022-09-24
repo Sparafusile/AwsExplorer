@@ -1,11 +1,10 @@
-using System;
 using Amazon.S3;
 using Explorer.Models;
 using Amazon.S3.Model;
 using System.Text.Json;
 using Explorer.Classes;
 using System.Runtime.InteropServices;
-using System.Xml.Linq;
+using AwsExplorer;
 
 namespace Explorer;
 
@@ -22,6 +21,7 @@ public partial class Main : Form
     private Models.Settings? Settings { get; set; }
     private Models.Folder? Folder { get; set; }
     private NativeMethods.SHFILEINFO shfi;
+    private FileMetaData? MetaData { get; set; }
 
     public Main()
     {
@@ -212,6 +212,10 @@ public partial class Main : Form
         }
     }
 
+    private void TbMoveBucket_Click( object sender, EventArgs e )
+    {
+    }
+
     private void TbViewLogs_Click( object sender, EventArgs e )
     {
         var fullPath = !string.IsNullOrEmpty( this.Settings?.LogFilePath )
@@ -235,6 +239,12 @@ public partial class Main : Form
         this.SaveSettings();
     }
 
+    private void TxtHistory_Click( object sender, EventArgs e )
+    {
+        if( this.MetaData == null ) return;
+        new HistoryDialog( this.MetaData.History ){ StartPosition = FormStartPosition.CenterParent }.ShowDialog( this ) ;
+    }
+
     private async void TreeView_AfterSelect( object sender, TreeViewEventArgs e )
     {
         if( e.Node == null ) return;
@@ -252,13 +262,13 @@ public partial class Main : Form
             {
                 try
                 {
-                    var metaData = await this.GetMetaData( obj.Key );
+                    this.MetaData = await this.GetMetaData( obj.Key );
 
-                    this.txtComments.Text = metaData?.Comments;
+                    this.txtComments.Text = this.MetaData?.Comments;
 
-                    if( metaData?.History != null )
+                    if( this.MetaData?.History != null )
                     {
-                        var h = metaData.History.OrderByDescending( m => m.Timestamp ).ToList();
+                        var h = this.MetaData.History.OrderByDescending( m => m.Timestamp ).ToList();
                         this.txtHistory.Text = string.Join( Environment.NewLine + Environment.NewLine, h );
                     }
                 }
