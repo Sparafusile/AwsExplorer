@@ -66,6 +66,12 @@ public partial class FolderDialog : Form
         try
         {
             var response = await S3Client.PutBucketAsync( d.Name );
+
+            if( response.HttpStatusCode == System.Net.HttpStatusCode.OK )
+            {
+                this.cbRemoteBucket.Items.Add( d.Name );
+                this.cbRemoteBucket.SelectedItem = d.Name;
+            }
         }
         catch
         {

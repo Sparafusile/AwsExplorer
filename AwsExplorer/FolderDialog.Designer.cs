@@ -274,6 +274,7 @@
             this.cbRemoteBucket.Location = new System.Drawing.Point(129, 117);
             this.cbRemoteBucket.Name = "cbRemoteBucket";
             this.cbRemoteBucket.Size = new System.Drawing.Size(196, 23);
+            this.cbRemoteBucket.Sorted = true;
             this.cbRemoteBucket.TabIndex = 16;
             // 
             // label4

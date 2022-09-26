@@ -212,8 +212,62 @@ public partial class Main : Form
         }
     }
 
-    private void TbMoveBucket_Click( object sender, EventArgs e )
+    private async void TbMoveBucket_Click( object sender, EventArgs e )
     {
+        if( this.S3Client == null || this.Settings == null || this.Folder == null ) return;
+
+        var d = new MoveBucketDialog( this.S3Client, this.Folder ) { StartPosition = FormStartPosition.CenterParent };
+        if( d.ShowDialog( this ) != DialogResult.OK ) return;
+
+        var srcPrefix = this.Folder.Prefix + d.SourcePrefix;
+        var objects = await S3Client.GetObjects( this.Folder.Bucket, srcPrefix ).ToListAsync();
+
+        this.pbProgress.Value = 0;
+        this.pbProgress.Minimum = 0;
+        this.pbProgress.Maximum = objects.Count;
+
+        foreach( var m in objects )
+        {
+            this.lblStatus.Text = $"{( d.MoveFiles ? "Moving" : "Copying" )} {m.Key.Split( '/' ).Last()}";
+
+            var destKey = m.Key;
+
+            if( !string.IsNullOrWhiteSpace( d.SourcePrefix ) )
+            {
+                destKey = destKey[d.SourcePrefix.Length..];
+            }
+
+            if( !string.IsNullOrWhiteSpace( d.DestinationPrefix ) )
+            {
+                destKey = d.DestinationPrefix + destKey;
+            }
+
+            destKey = destKey.Replace( "//", "/" );
+
+            this.Log( $"Copying {this.Folder.Bucket}/{m.Key} to {d.DestinationBucket}/{destKey}" );
+            Task task = this.S3Client.CopyObjectAsync( this.Folder.Bucket, m.Key, d.DestinationBucket, destKey );
+
+            if( d.MoveFiles )
+            {
+                task = task.ContinueWith( t => this.S3Client.DeleteObjectAsync( this.Folder.Bucket, m.Key ) );
+            }
+
+            await task;
+
+            this.pbProgress.Value++;
+        }
+
+        this.pbProgress.Value = this.pbProgress.Maximum;
+        this.lblStatus.Text = $"All files have been {( d.MoveFiles ? "moved" : "copied" )}";
+
+        var NewFolder = this.Folder.Clone();
+        NewFolder.Bucket = d.DestinationBucket;
+        NewFolder.Prefix = d.DestinationPrefix;
+
+        this.Settings.Folders.Add( NewFolder );
+        this.cbFolder.Items.Add( NewFolder );
+        this.cbFolder.SelectedItem = NewFolder;
+        this.SaveSettings();
     }
 
     private void TbViewLogs_Click( object sender, EventArgs e )
