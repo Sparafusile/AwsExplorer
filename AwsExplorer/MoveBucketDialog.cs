@@ -1,7 +1,6 @@
 ﻿using Explorer;
 using Amazon.S3;
 using Explorer.Models;
-using Explorer.Classes;
 
 namespace AwsExplorer;
 
@@ -15,13 +14,18 @@ public partial class MoveBucketDialog : Form
     public string? DestinationBucket { get; set; }
     public string? DestinationPrefix { get; set; }
 
-    public MoveBucketDialog( IAmazonS3 S3Client, Folder Folder )
+    public MoveBucketDialog( IAmazonS3 S3Client, Folder Folder, List<string> Prefixes, string? SourcePrefix = null )
     {
         InitializeComponent();
 
         this.MoveFiles = false;
         this.Folder = Folder;
         this.S3Client = S3Client;
+
+        this.cbSourcePrefix.Items.Clear();
+        this.cbSourcePrefix.Items.AddRange( Prefixes.ToArray() );
+        this.cbSourcePrefix.SelectedItem = SourcePrefix;
+        this.txtDestinationPrefix.Text = SourcePrefix;
 
         this.LoadBuckets();
     }
@@ -85,11 +89,16 @@ public partial class MoveBucketDialog : Form
     private void BtnOkay_Click( object sender, EventArgs e )
     {
         this.MoveFiles = this.rbMove.Checked;
-        this.SourcePrefix = this.txtSourcePrefix.Text;
+        this.SourcePrefix = (string)this.cbSourcePrefix.SelectedItem;
         this.DestinationBucket = (string)this.cbRemoteBucket.SelectedItem;
         this.DestinationPrefix = this.txtDestinationPrefix.Text;
 
         this.DialogResult = DialogResult.OK;
         this.Close();
+    }
+
+    private void CbSourcePrefix_SelectedIndexChanged( object sender, EventArgs e )
+    {
+        this.txtDestinationPrefix.Text = (string)this.cbSourcePrefix.SelectedItem;
     }
 }

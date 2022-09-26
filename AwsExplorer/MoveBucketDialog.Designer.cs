@@ -40,11 +40,11 @@
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
-            this.txtSourcePrefix = new System.Windows.Forms.TextBox();
             this.txtDestinationPrefix = new System.Windows.Forms.TextBox();
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             this.rbCopy = new System.Windows.Forms.RadioButton();
             this.rbMove = new System.Windows.Forms.RadioButton();
+            this.cbSourcePrefix = new System.Windows.Forms.ComboBox();
             this.tableLayoutPanel1.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
             this.flowLayoutPanel1.SuspendLayout();
@@ -65,9 +65,9 @@
             this.tableLayoutPanel1.Controls.Add(this.label1, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.label2, 0, 2);
             this.tableLayoutPanel1.Controls.Add(this.label4, 0, 3);
-            this.tableLayoutPanel1.Controls.Add(this.txtSourcePrefix, 1, 0);
             this.tableLayoutPanel1.Controls.Add(this.txtDestinationPrefix, 1, 2);
             this.tableLayoutPanel1.Controls.Add(this.flowLayoutPanel1, 1, 3);
+            this.tableLayoutPanel1.Controls.Add(this.cbSourcePrefix, 1, 0);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
@@ -77,6 +77,7 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel1.Size = new System.Drawing.Size(395, 195);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
@@ -199,15 +200,6 @@
             this.label4.TabIndex = 27;
             this.label4.Text = "Copy or Move?";
             // 
-            // txtSourcePrefix
-            // 
-            this.txtSourcePrefix.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tableLayoutPanel1.SetColumnSpan(this.txtSourcePrefix, 3);
-            this.txtSourcePrefix.Location = new System.Drawing.Point(123, 6);
-            this.txtSourcePrefix.Name = "txtSourcePrefix";
-            this.txtSourcePrefix.Size = new System.Drawing.Size(269, 23);
-            this.txtSourcePrefix.TabIndex = 28;
-            // 
             // txtDestinationPrefix
             // 
             this.txtDestinationPrefix.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
@@ -250,6 +242,18 @@
             this.rbMove.Text = "Move Files";
             this.rbMove.UseVisualStyleBackColor = true;
             // 
+            // cbSourcePrefix
+            // 
+            this.cbSourcePrefix.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tableLayoutPanel1.SetColumnSpan(this.cbSourcePrefix, 3);
+            this.cbSourcePrefix.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbSourcePrefix.FormattingEnabled = true;
+            this.cbSourcePrefix.Location = new System.Drawing.Point(123, 6);
+            this.cbSourcePrefix.Name = "cbSourcePrefix";
+            this.cbSourcePrefix.Size = new System.Drawing.Size(269, 23);
+            this.cbSourcePrefix.TabIndex = 31;
+            this.cbSourcePrefix.SelectedIndexChanged += new System.EventHandler(this.CbSourcePrefix_SelectedIndexChanged);
+            // 
             // MoveBucketDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -281,10 +285,10 @@
         private Label label1;
         private Label label2;
         private Label label4;
-        private TextBox txtSourcePrefix;
         private TextBox txtDestinationPrefix;
         private FlowLayoutPanel flowLayoutPanel1;
         private RadioButton rbCopy;
         private RadioButton rbMove;
+        private ComboBox cbSourcePrefix;
     }
 }

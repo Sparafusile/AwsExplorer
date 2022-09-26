@@ -1,10 +1,10 @@
 using Amazon.S3;
+using AwsExplorer;
 using Explorer.Models;
 using Amazon.S3.Model;
 using System.Text.Json;
 using Explorer.Classes;
 using System.Runtime.InteropServices;
-using AwsExplorer;
 
 namespace Explorer;
 
@@ -216,8 +216,21 @@ public partial class Main : Form
     {
         if( this.S3Client == null || this.Settings == null || this.Folder == null ) return;
 
-        var d = new MoveBucketDialog( this.S3Client, this.Folder ) { StartPosition = FormStartPosition.CenterParent };
+        string? selectedPrefix = null;
+        if( this.treeView.SelectedNode?.Tag is string folder )
+        {
+            selectedPrefix = this.treeView.SelectedNode.FullPath + "/";
+        }
+
+        var prefixes = this.GetPrefixes( this.treeView.Nodes );
+        var d = new MoveBucketDialog( this.S3Client, this.Folder, prefixes, selectedPrefix ) { StartPosition = FormStartPosition.CenterParent };
         if( d.ShowDialog( this ) != DialogResult.OK ) return;
+
+        if( d.MoveFiles )
+        {
+            var result = MessageBox.Show( this, "You are about to move files from the source bucket to the destination bucket. The files in the source bucket that match the prefix will be deleted. Do you whish to proceed?", "Confirm File Move", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning );
+            if( result != DialogResult.OK ) return;
+        }
 
         var srcPrefix = this.Folder.Prefix + d.SourcePrefix;
         var objects = await S3Client.GetObjects( this.Folder.Bucket, srcPrefix ).ToListAsync();
@@ -988,6 +1001,24 @@ public partial class Main : Form
             // The file might not exist
             return new FileMetaData();
         }
+    }
+
+    private List<string> GetPrefixes( TreeNodeCollection Nodes )
+    {
+        var list = new List<string>();
+
+        foreach( TreeNode node in Nodes )
+        {
+            if( node.Nodes == null || node.Nodes.Count == 0 )
+            {
+                continue;
+            }
+
+            list.Add( node.FullPath + "/" );
+            list.AddRange( GetPrefixes( node.Nodes ) );
+        }
+
+        return list;
     }
 
     private async Task CreateFile( string Key, string Path )
