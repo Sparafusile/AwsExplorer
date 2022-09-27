@@ -9,6 +9,7 @@ AwsExplorer allows a user to manage files located in a remote AWS S3 bucket, upl
 - Generate a signed URL to share files even if they are not public
 - Keep files on your computer and in S3 synced up
 - Copy/Move files between buckets
+- Copy/Move files between accounts
 - Optionally, track updates to files in S3
 - Optionally, associate comments to each file
 
