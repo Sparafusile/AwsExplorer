@@ -35,7 +35,11 @@ public partial class ShareDialog : Form
 
     private void BtnCreateUrl_Click( object sender, EventArgs e )
     {
-        if( !int.TryParse( this.txtNumber.Text, out int n ) ) return;
+        if( !int.TryParse( this.txtNumber.Text, out int n ) )
+        {
+            MessageBox.Show( this, "Please enter a timer interval smaller than 12 hours.", "Could not Generate URL", MessageBoxButtons.OK, MessageBoxIcon.Error );
+            return;
+        }
 
         var expireDate = DateTime.Now;
 

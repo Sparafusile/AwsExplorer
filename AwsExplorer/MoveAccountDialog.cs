@@ -43,6 +43,18 @@ public partial class MoveAccountDialog : Form
         this.Region = (string)this.cbRegion.SelectedItem;
         this.DestinationPrefix = this.txtDestinationPrefix.Text;
 
+        if( string.IsNullOrWhiteSpace( this.AwsAccessKey ) || string.IsNullOrWhiteSpace( this.AwsSecretKey ) )
+        {
+            MessageBox.Show( this, "Please enter AWS credentials.", "Could not Copy Files", MessageBoxButtons.OK, MessageBoxIcon.Error );
+            return;
+        }
+
+        if( string.IsNullOrWhiteSpace( this.DestinationBucket ) )
+        {
+            MessageBox.Show( this, "Please select a destination bucket.", "Could not Copy Files", MessageBoxButtons.OK, MessageBoxIcon.Error );
+            return;
+        }
+
         this.DialogResult = DialogResult.OK;
         this.Close();
     }

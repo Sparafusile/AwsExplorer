@@ -34,6 +34,12 @@ public partial class DownloadDialog : Form
         this.Download = this.rbDownload.Checked || this.rbBoth.Checked;
         this.Upload = this.rbBoth.Checked;
 
+        if( string.IsNullOrWhiteSpace( this.Directory ) )
+        {
+            MessageBox.Show( this, "Please select a destination directory.", "Could not Download Files", MessageBoxButtons.OK, MessageBoxIcon.Error );
+            return;
+        }
+
         this.DialogResult = DialogResult.OK;
         this.Close();
     }

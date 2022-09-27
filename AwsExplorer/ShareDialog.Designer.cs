@@ -76,7 +76,7 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(672, 400);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(704, 400);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
             // groupBox1
@@ -87,7 +87,7 @@
             this.groupBox1.Font = new System.Drawing.Font("Segoe UI", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.groupBox1.Location = new System.Drawing.Point(3, 3);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(666, 174);
+            this.groupBox1.Size = new System.Drawing.Size(698, 174);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Use Caution!";
@@ -104,7 +104,7 @@
             this.tableLayoutPanel2.Name = "tableLayoutPanel2";
             this.tableLayoutPanel2.RowCount = 1;
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(660, 132);
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(692, 132);
             this.tableLayoutPanel2.TabIndex = 0;
             // 
             // pictureBox1
@@ -116,7 +116,7 @@
             this.pictureBox1.Location = new System.Drawing.Point(50, 20);
             this.pictureBox1.Margin = new System.Windows.Forms.Padding(50, 20, 50, 20);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(88, 92);
+            this.pictureBox1.Size = new System.Drawing.Size(97, 92);
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
@@ -126,10 +126,10 @@
             this.textBox1.BackColor = System.Drawing.SystemColors.Control;
             this.textBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.textBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.textBox1.Location = new System.Drawing.Point(191, 3);
+            this.textBox1.Location = new System.Drawing.Point(200, 3);
             this.textBox1.Multiline = true;
             this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(466, 126);
+            this.textBox1.Size = new System.Drawing.Size(489, 126);
             this.textBox1.TabIndex = 99;
             this.textBox1.TabStop = false;
             this.textBox1.Text = "Anyone can access the object with this presigned URL until it expires, even if th" +
@@ -143,7 +143,7 @@
             this.label1.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.label1.Location = new System.Drawing.Point(3, 212);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(329, 15);
+            this.label1.Size = new System.Drawing.Size(345, 15);
             this.label1.TabIndex = 1;
             this.label1.Text = "Time interval until the presigned URL expires";
             // 
@@ -154,7 +154,7 @@
             this.rbMinutes.Dock = System.Windows.Forms.DockStyle.Fill;
             this.rbMinutes.Location = new System.Drawing.Point(3, 233);
             this.rbMinutes.Name = "rbMinutes";
-            this.rbMinutes.Size = new System.Drawing.Size(329, 24);
+            this.rbMinutes.Size = new System.Drawing.Size(345, 24);
             this.rbMinutes.TabIndex = 3;
             this.rbMinutes.TabStop = true;
             this.rbMinutes.Text = "Minutes";
@@ -166,7 +166,7 @@
             this.rbHours.Dock = System.Windows.Forms.DockStyle.Fill;
             this.rbHours.Location = new System.Drawing.Point(3, 263);
             this.rbHours.Name = "rbHours";
-            this.rbHours.Size = new System.Drawing.Size(329, 24);
+            this.rbHours.Size = new System.Drawing.Size(345, 24);
             this.rbHours.TabIndex = 4;
             this.rbHours.Text = "Hours";
             this.rbHours.UseVisualStyleBackColor = true;
@@ -174,9 +174,9 @@
             // btnCreateUrl
             // 
             this.btnCreateUrl.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnCreateUrl.Location = new System.Drawing.Point(338, 263);
+            this.btnCreateUrl.Location = new System.Drawing.Point(354, 263);
             this.btnCreateUrl.Name = "btnCreateUrl";
-            this.btnCreateUrl.Size = new System.Drawing.Size(331, 23);
+            this.btnCreateUrl.Size = new System.Drawing.Size(347, 23);
             this.btnCreateUrl.TabIndex = 5;
             this.btnCreateUrl.Text = "Generate URL";
             this.btnCreateUrl.UseVisualStyleBackColor = true;
@@ -185,9 +185,9 @@
             // txtNumber
             // 
             this.txtNumber.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtNumber.Location = new System.Drawing.Point(338, 233);
+            this.txtNumber.Location = new System.Drawing.Point(354, 233);
             this.txtNumber.Name = "txtNumber";
-            this.txtNumber.Size = new System.Drawing.Size(331, 23);
+            this.txtNumber.Size = new System.Drawing.Size(347, 23);
             this.txtNumber.TabIndex = 1;
             this.txtNumber.Text = "30";
             // 
@@ -199,7 +199,7 @@
             this.txtUrl.Multiline = true;
             this.txtUrl.Name = "txtUrl";
             this.txtUrl.ReadOnly = true;
-            this.txtUrl.Size = new System.Drawing.Size(666, 54);
+            this.txtUrl.Size = new System.Drawing.Size(698, 54);
             this.txtUrl.TabIndex = 7;
             // 
             // btnCancel
@@ -209,7 +209,7 @@
             this.btnCancel.Location = new System.Drawing.Point(20, 356);
             this.btnCancel.Margin = new System.Windows.Forms.Padding(20, 3, 20, 3);
             this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Size = new System.Drawing.Size(295, 37);
+            this.btnCancel.Size = new System.Drawing.Size(311, 37);
             this.btnCancel.TabIndex = 8;
             this.btnCancel.Text = "Cancel";
             this.btnCancel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -221,10 +221,10 @@
             // 
             this.btnOkay.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.btnOkay.Image = ((System.Drawing.Image)(resources.GetObject("btnOkay.Image")));
-            this.btnOkay.Location = new System.Drawing.Point(355, 356);
+            this.btnOkay.Location = new System.Drawing.Point(371, 356);
             this.btnOkay.Margin = new System.Windows.Forms.Padding(20, 3, 20, 3);
             this.btnOkay.Name = "btnOkay";
-            this.btnOkay.Size = new System.Drawing.Size(297, 37);
+            this.btnOkay.Size = new System.Drawing.Size(313, 37);
             this.btnOkay.TabIndex = 9;
             this.btnOkay.Text = "Okay";
             this.btnOkay.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -236,9 +236,9 @@
             // 
             this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(338, 210);
+            this.label2.Location = new System.Drawing.Point(354, 212);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(331, 20);
+            this.label2.Size = new System.Drawing.Size(347, 15);
             this.label2.TabIndex = 2;
             this.label2.Text = "You can share an object with a presigned URL for up to 12 hours.";
             // 
@@ -246,7 +246,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(702, 430);
+            this.ClientSize = new System.Drawing.Size(734, 430);
             this.Controls.Add(this.tableLayoutPanel1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "ShareDialog";

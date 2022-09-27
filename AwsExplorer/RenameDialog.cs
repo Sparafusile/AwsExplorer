@@ -23,6 +23,13 @@ public partial class RenameDialog : Form
     private void BtnOkay_Click( object sender, EventArgs e )
     {
         this.Name = this.txtName.Text;
+
+        if( string.IsNullOrWhiteSpace( this.Name ) )
+        {
+            MessageBox.Show( this, "Please enter a name.", "Cannot Perform Action", MessageBoxButtons.OK, MessageBoxIcon.Error );
+            return;
+        }
+
         this.DialogResult = DialogResult.OK;
         this.Close();
     }

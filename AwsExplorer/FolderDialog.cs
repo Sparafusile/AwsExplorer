@@ -39,6 +39,18 @@ public partial class FolderDialog : Form
         this.Folder.Prefix = this.txtFilePrefix.Text;
         this.Folder.DatFile = this.cbOptions.Checked;
 
+        if( string.IsNullOrWhiteSpace( this.Folder.AwsAccessKey ) || string.IsNullOrWhiteSpace( this.Folder.AwsSecretKey ) )
+        {
+            MessageBox.Show( this, "Please enter AWS credentials.", "Could not Create Folder Link", MessageBoxButtons.OK, MessageBoxIcon.Error );
+            return;
+        }
+
+        if( string.IsNullOrWhiteSpace( this.Folder.Bucket ) )
+        {
+            MessageBox.Show( this, "Please select a remote bucket.", "Could not Create Folder Link", MessageBoxButtons.OK, MessageBoxIcon.Error );
+            return;
+        }
+
         this.DialogResult = DialogResult.OK;
         this.Close();
     }

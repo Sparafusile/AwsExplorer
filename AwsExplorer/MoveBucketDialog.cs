@@ -93,6 +93,12 @@ public partial class MoveBucketDialog : Form
         this.DestinationBucket = (string)this.cbRemoteBucket.SelectedItem;
         this.DestinationPrefix = this.txtDestinationPrefix.Text;
 
+        if( string.IsNullOrWhiteSpace( this.DestinationBucket ) )
+        {
+            MessageBox.Show( this, "Please select a remote bucket.", "Could not Copy Files", MessageBoxButtons.OK, MessageBoxIcon.Error );
+            return;
+        }
+
         this.DialogResult = DialogResult.OK;
         this.Close();
     }

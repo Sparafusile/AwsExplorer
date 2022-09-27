@@ -18,8 +18,8 @@ public partial class Main : Form
     private static readonly string[] SizeSuffixes = { "bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
 
     private IAmazonS3? S3Client { get; set; }
-    private Models.Settings? Settings { get; set; }
-    private Models.Folder? Folder { get; set; }
+    private Settings? Settings { get; set; }
+    private Folder? Folder { get; set; }
     private NativeMethods.SHFILEINFO shfi;
     private FileMetaData? MetaData { get; set; }
 
@@ -32,16 +32,23 @@ public partial class Main : Form
     {
         this.LoadSettings();
 
-        this.shfi = new NativeMethods.SHFILEINFO();
+        try
+        {
+            this.shfi = new NativeMethods.SHFILEINFO();
 
-        // Obtain a handle to the system image list.
-        IntPtr hSysImgList = NativeMethods.SHGetFileInfo( "", 0, ref this.shfi, (uint)Marshal.SizeOf( this.shfi ), NativeMethods.SHGFI_SYSICONINDEX | NativeMethods.SHGFI_SMALLICON );
+            // Obtain a handle to the system image list.
+            IntPtr hSysImgList = NativeMethods.SHGetFileInfo( "", 0, ref this.shfi, (uint)Marshal.SizeOf( this.shfi ), NativeMethods.SHGFI_SYSICONINDEX | NativeMethods.SHGFI_SMALLICON );
 
-        // Set the ListView control to use that image list.
-        IntPtr hOldImgList = NativeMethods.SendMessage( this.treeView.Handle, (uint)NativeMethods.TVM.SETIMAGELIST, 0, hSysImgList );
+            // Set the ListView control to use that image list.
+            IntPtr hOldImgList = NativeMethods.SendMessage( this.treeView.Handle, (uint)NativeMethods.TVM.SETIMAGELIST, 0, hSysImgList );
 
-        // If the ListView control already had an image list, delete the old one.
-        if( hOldImgList != IntPtr.Zero ) NativeMethods.ImageList_Destroy( hOldImgList );
+            // If the ListView control already had an image list, delete the old one.
+            if( hOldImgList != IntPtr.Zero ) NativeMethods.ImageList_Destroy( hOldImgList );
+        }
+        catch( Exception ex )
+        {
+            this.Log( "Could not use native image icons.", ex );
+        }
 
         this.cbFolder.Items.Clear();
         if( this.Settings == null ) return;
@@ -132,7 +139,7 @@ public partial class Main : Form
 
     private async Task LoadRemoteFiles( bool RestoreState )
     {
-        this.Folder = this.cbFolder.SelectedItem as Models.Folder;
+        this.Folder = this.cbFolder.SelectedItem as Folder;
         if( this.Folder == null ) return;
 
         var state = this.treeView.Nodes.GetExpansionState();
@@ -147,20 +154,28 @@ public partial class Main : Form
         this.lblStatus.Text = $"Loading remote files from {this.Folder.Bucket}...";
         this.pbProgress.Value = 0;
 
-        if( this.S3Client != null ) this.S3Client.Dispose();
-        var region = Amazon.RegionEndpoint.GetBySystemName( this.Folder.Region ?? "us-east-1" );
-        this.S3Client = new AmazonS3Client( this.Folder.AwsAccessKey, this.Folder.AwsSecretKey, region );
-
-        this.treeView.Nodes.Clear();
-        await foreach( var m in S3Client.GetObjects( this.Folder.Bucket, this.Folder.Prefix ) )
+        try
         {
-            if( this.Folder.DatFile )
-            {
-                var name = m.Key.Split( "/" ).Last();
-                if( name.StartsWith( "_" ) && name.EndsWith( ".dat" ) ) continue;
-            }
+            if( this.S3Client != null ) this.S3Client.Dispose();
+            var region = Amazon.RegionEndpoint.GetBySystemName( this.Folder.Region ?? "us-east-1" );
+            this.S3Client = new AmazonS3Client( this.Folder.AwsAccessKey, this.Folder.AwsSecretKey, region );
 
-            AddObject( m );
+            this.treeView.Nodes.Clear();
+            await foreach( var m in S3Client.GetObjects( this.Folder.Bucket, this.Folder.Prefix ) )
+            {
+                if( this.Folder.DatFile )
+                {
+                    var name = m.Key.Split( "/" ).Last();
+                    if( name.StartsWith( "_" ) && name.EndsWith( ".dat" ) ) continue;
+                }
+
+                AddObject( m );
+            }
+        }
+        catch( Exception ex )
+        {
+            this.HandleException( "Could not connect to S3 and load file list.", ex );
+            this.S3Client = null;
         }
 
         this.treeView.Sort();
@@ -223,165 +238,179 @@ public partial class Main : Form
     {
         if( this.S3Client == null || this.Settings == null || this.Folder == null ) return;
 
-        string? selectedPrefix = null;
-        if( this.treeView.SelectedNode?.Tag is string folder )
+        try
         {
-            selectedPrefix = this.treeView.SelectedNode.FullPath + "/";
-        }
-
-        var prefixes = this.GetPrefixes( this.treeView.Nodes );
-        var d = new MoveBucketDialog( this.S3Client, this.Folder, prefixes, selectedPrefix ) { StartPosition = FormStartPosition.CenterParent };
-        if( d.ShowDialog( this ) != DialogResult.OK ) return;
-
-        if( d.MoveFiles )
-        {
-            var result = MessageBox.Show( this, "You are about to move files from the source bucket to the destination bucket. The files in the source bucket that match the prefix will be deleted. Do you whish to proceed?", "Confirm File Move", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning );
-            if( result != DialogResult.OK ) return;
-        }
-
-        var srcPrefix = this.Folder.Prefix + d.SourcePrefix;
-        var srcObjects = await S3Client.GetObjects( this.Folder.Bucket, srcPrefix ).ToListAsync();
-
-        this.pbProgress.Value = 0;
-        this.pbProgress.Minimum = 0;
-        this.pbProgress.Maximum = srcObjects.Count;
-
-        foreach( var m in srcObjects )
-        {
-            this.lblStatus.Text = $"{( d.MoveFiles ? "Moving" : "Copying" )} {m.Key.Split( '/' ).Last()}";
-
-            var destKey = m.Key;
-
-            if( !string.IsNullOrWhiteSpace( d.SourcePrefix ) )
+            string? selectedPrefix = null;
+            if( this.treeView.SelectedNode?.Tag is string folder )
             {
-                destKey = destKey[d.SourcePrefix.Length..];
+                selectedPrefix = this.treeView.SelectedNode.FullPath + "/";
             }
 
-            if( !string.IsNullOrWhiteSpace( d.DestinationPrefix ) )
-            {
-                destKey = d.DestinationPrefix + destKey;
-            }
-
-            destKey = destKey.Replace( "//", "/" );
-
-            this.Log( $"Copying {this.Folder.Bucket}/{m.Key} to {d.DestinationBucket}/{destKey}" );
-            Task task = this.S3Client.CopyObjectAsync( this.Folder.Bucket, m.Key, d.DestinationBucket, destKey );
+            var prefixes = this.GetPrefixes( this.treeView.Nodes );
+            var d = new MoveBucketDialog( this.S3Client, this.Folder, prefixes, selectedPrefix ) { StartPosition = FormStartPosition.CenterParent };
+            if( d.ShowDialog( this ) != DialogResult.OK ) return;
 
             if( d.MoveFiles )
             {
-                task = task.ContinueWith( t => this.S3Client.DeleteObjectAsync( this.Folder.Bucket, m.Key ) );
+                var result = MessageBox.Show( this, "You are about to move files from the source bucket to the destination bucket. The files in the source bucket that match the prefix will be deleted. Do you whish to proceed?", "Confirm File Move", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning );
+                if( result != DialogResult.OK ) return;
             }
 
-            await task;
+            var srcPrefix = this.Folder.Prefix + d.SourcePrefix;
+            var srcObjects = await S3Client.GetObjects( this.Folder.Bucket, srcPrefix ).ToListAsync();
 
-            this.pbProgress.Value++;
+            this.pbProgress.Value = 0;
+            this.pbProgress.Minimum = 0;
+            this.pbProgress.Maximum = srcObjects.Count;
+
+            foreach( var m in srcObjects )
+            {
+                this.lblStatus.Text = $"{( d.MoveFiles ? "Moving" : "Copying" )} {m.Key.Split( '/' ).Last()}";
+
+                var destKey = m.Key;
+
+                if( !string.IsNullOrWhiteSpace( d.SourcePrefix ) )
+                {
+                    destKey = destKey[d.SourcePrefix.Length..];
+                }
+
+                if( !string.IsNullOrWhiteSpace( d.DestinationPrefix ) )
+                {
+                    destKey = d.DestinationPrefix + destKey;
+                }
+
+                destKey = destKey.Replace( "//", "/" );
+
+                this.Log( $"Copying {this.Folder.Bucket}/{m.Key} to {d.DestinationBucket}/{destKey}" );
+                Task task = this.S3Client.CopyObjectAsync( this.Folder.Bucket, m.Key, d.DestinationBucket, destKey );
+
+                if( d.MoveFiles )
+                {
+                    task = task.ContinueWith( t => this.S3Client.DeleteObjectAsync( this.Folder.Bucket, m.Key ) );
+                }
+
+                await task;
+
+                this.pbProgress.Value++;
+            }
+
+            this.pbProgress.Value = this.pbProgress.Maximum;
+            this.lblStatus.Text = $"All files have been {( d.MoveFiles ? "moved" : "copied" )}";
+
+            var NewFolder = this.Folder.Clone();
+            NewFolder.Bucket = d.DestinationBucket;
+            NewFolder.Prefix = d.DestinationPrefix;
+
+            this.Settings.Folders.Add( NewFolder );
+            this.cbFolder.Items.Add( NewFolder );
+            this.cbFolder.SelectedItem = NewFolder;
+            this.SaveSettings();
         }
-
-        this.pbProgress.Value = this.pbProgress.Maximum;
-        this.lblStatus.Text = $"All files have been {( d.MoveFiles ? "moved" : "copied" )}";
-
-        var NewFolder = this.Folder.Clone();
-        NewFolder.Bucket = d.DestinationBucket;
-        NewFolder.Prefix = d.DestinationPrefix;
-
-        this.Settings.Folders.Add( NewFolder );
-        this.cbFolder.Items.Add( NewFolder );
-        this.cbFolder.SelectedItem = NewFolder;
-        this.SaveSettings();
+        catch( Exception ex )
+        {
+            this.HandleException( "Could not move files to another bucket.", ex );
+        }
     }
 
     private async void TbMoveAccount_Click( object sender, EventArgs e )
     {
         if( this.S3Client == null || this.Settings == null || this.Folder == null ) return;
 
-        string? selectedPrefix = null;
-        if( this.treeView.SelectedNode?.Tag is string folder )
+        try
         {
-            selectedPrefix = this.treeView.SelectedNode.FullPath + "/";
-        }
-
-        var prefixes = this.GetPrefixes( this.treeView.Nodes );
-        var d = new MoveAccountDialog( prefixes, selectedPrefix ) { StartPosition = FormStartPosition.CenterParent };
-        if( d.ShowDialog( this ) != DialogResult.OK ) return;
-
-        if( d.MoveFiles )
-        {
-            var result = MessageBox.Show( this, "You are about to move files from the source account to the destination account. The files in the source bucket that match the prefix will be deleted. Do you whish to proceed?", "Confirm File Move", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning );
-            if( result != DialogResult.OK ) return;
-        }
-
-        var srcClient = this.S3Client;
-        var region = Amazon.RegionEndpoint.GetBySystemName( d.Region ?? "us-east-1" );
-        using var destClient = new AmazonS3Client( d.AwsAccessKey, d.AwsSecretKey, region );
-
-        var srcPrefix = this.Folder.Prefix + d.SourcePrefix;
-        var srcObjects = await srcClient.GetObjects( this.Folder.Bucket, srcPrefix ).ToListAsync();
-
-        this.pbProgress.Value = 0;
-        this.pbProgress.Minimum = 0;
-        this.pbProgress.Maximum = srcObjects.Count;
-
-        foreach( var m in srcObjects )
-        {
-            this.lblStatus.Text = $"{( d.MoveFiles ? "Moving" : "Copying" )} {m.Key.Split( '/' ).Last()}";
-
-            var destKey = m.Key;
-
-            if( !string.IsNullOrWhiteSpace( d.SourcePrefix ) )
+            string? selectedPrefix = null;
+            if( this.treeView.SelectedNode?.Tag is string folder )
             {
-                destKey = destKey[d.SourcePrefix.Length..];
+                selectedPrefix = this.treeView.SelectedNode.FullPath + "/";
             }
 
-            if( !string.IsNullOrWhiteSpace( d.DestinationPrefix ) )
-            {
-                destKey = d.DestinationPrefix + destKey;
-            }
-
-            destKey = destKey.Replace( "//", "/" );
-
-            this.Log( $"Copying {this.Folder.Bucket}/{m.Key} to {d.DestinationBucket}/{destKey}" );
-
-            var tempPath = Path.GetTempFileName();
-
-            // Download the file from the source bucket
-            Task task = srcClient.DownloadToFilePathAsync( this.Folder.Bucket, m.Key, tempPath, null );
-
-            // Upload the file to the destination bucket
-            task = task.ContinueWith( t => destClient.PutObjectAsync( new PutObjectRequest
-            {
-                BucketName = d.DestinationBucket,
-                FilePath = tempPath,
-                Key = destKey,
-            } ) );
+            var prefixes = this.GetPrefixes( this.treeView.Nodes );
+            var d = new MoveAccountDialog( prefixes, selectedPrefix ) { StartPosition = FormStartPosition.CenterParent };
+            if( d.ShowDialog( this ) != DialogResult.OK ) return;
 
             if( d.MoveFiles )
             {
-                // Delete the file from the source  bucket
-                task = task.ContinueWith( t => srcClient.DeleteObjectAsync( this.Folder.Bucket, m.Key ) );
+                var result = MessageBox.Show( this, "You are about to move files from the source account to the destination account. The files in the source bucket that match the prefix will be deleted. Do you whish to proceed?", "Confirm File Move", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning );
+                if( result != DialogResult.OK ) return;
             }
 
-            await task;
+            var srcClient = this.S3Client;
+            var region = Amazon.RegionEndpoint.GetBySystemName( d.Region ?? "us-east-1" );
+            using var destClient = new AmazonS3Client( d.AwsAccessKey, d.AwsSecretKey, region );
 
-            this.pbProgress.Value++;
+            var srcPrefix = this.Folder.Prefix + d.SourcePrefix;
+            var srcObjects = await srcClient.GetObjects( this.Folder.Bucket, srcPrefix ).ToListAsync();
+
+            this.pbProgress.Value = 0;
+            this.pbProgress.Minimum = 0;
+            this.pbProgress.Maximum = srcObjects.Count;
+
+            foreach( var m in srcObjects )
+            {
+                this.lblStatus.Text = $"{( d.MoveFiles ? "Moving" : "Copying" )} {m.Key.Split( '/' ).Last()}";
+
+                var destKey = m.Key;
+
+                if( !string.IsNullOrWhiteSpace( d.SourcePrefix ) )
+                {
+                    destKey = destKey[d.SourcePrefix.Length..];
+                }
+
+                if( !string.IsNullOrWhiteSpace( d.DestinationPrefix ) )
+                {
+                    destKey = d.DestinationPrefix + destKey;
+                }
+
+                destKey = destKey.Replace( "//", "/" );
+
+                this.Log( $"Copying {this.Folder.Bucket}/{m.Key} to {d.DestinationBucket}/{destKey}" );
+
+                var tempPath = Path.GetTempFileName();
+
+                // Download the file from the source bucket
+                Task task = srcClient.DownloadToFilePathAsync( this.Folder.Bucket, m.Key, tempPath, null );
+
+                // Upload the file to the destination bucket
+                task = task.ContinueWith( t => destClient.PutObjectAsync( new PutObjectRequest
+                {
+                    BucketName = d.DestinationBucket,
+                    FilePath = tempPath,
+                    Key = destKey,
+                } ) );
+
+                if( d.MoveFiles )
+                {
+                    // Delete the file from the source  bucket
+                    task = task.ContinueWith( t => srcClient.DeleteObjectAsync( this.Folder.Bucket, m.Key ) );
+                }
+
+                await task;
+
+                this.pbProgress.Value++;
+            }
+
+            this.pbProgress.Value = this.pbProgress.Maximum;
+            this.lblStatus.Text = $"All files have been {( d.MoveFiles ? "moved" : "copied" )}";
+
+            var NewFolder = new Folder
+            {
+                AwsAccessKey = d.AwsAccessKey,
+                AwsSecretKey = d.AwsSecretKey,
+                Region = d.Region,
+                Bucket = d.DestinationBucket,
+                Prefix = d.DestinationPrefix,
+                DatFile = this.Folder.DatFile,
+            };
+
+            this.Settings.Folders.Add( NewFolder );
+            this.cbFolder.Items.Add( NewFolder );
+            this.cbFolder.SelectedItem = NewFolder;
+            this.SaveSettings();
         }
-
-        this.pbProgress.Value = this.pbProgress.Maximum;
-        this.lblStatus.Text = $"All files have been {( d.MoveFiles ? "moved" : "copied" )}";
-
-        var NewFolder = new Folder
+        catch( Exception ex )
         {
-            AwsAccessKey = d.AwsAccessKey,
-            AwsSecretKey = d.AwsSecretKey,
-            Region = d.Region,
-            Bucket = d.DestinationBucket,
-            Prefix = d.DestinationPrefix,
-            DatFile = this.Folder.DatFile,
-        };
-
-        this.Settings.Folders.Add( NewFolder );
-        this.cbFolder.Items.Add( NewFolder );
-        this.cbFolder.SelectedItem = NewFolder;
-        this.SaveSettings();
+            this.HandleException( "Could not move files to another account.", ex );
+        }
     }
 
     private void TbViewLogs_Click( object sender, EventArgs e )
@@ -428,21 +457,13 @@ public partial class Main : Form
 
             if( this.S3Client != null && this.Folder != null && this.Folder.DatFile )
             {
-                try
-                {
-                    this.MetaData = await this.GetMetaData( obj.Key );
+                this.MetaData = await this.GetMetaData( obj.Key );
+                this.txtComments.Text = this.MetaData?.Comments;
 
-                    this.txtComments.Text = this.MetaData?.Comments;
-
-                    if( this.MetaData?.History != null )
-                    {
-                        var h = this.MetaData.History.OrderByDescending( m => m.Timestamp ).ToList();
-                        this.txtHistory.Text = string.Join( Environment.NewLine + Environment.NewLine, h );
-                    }
-                }
-                catch
+                if( this.MetaData?.History != null )
                 {
-                    // The file might not exist
+                    var h = this.MetaData.History.OrderByDescending( m => m.Timestamp ).ToList();
+                    this.txtHistory.Text = string.Join( Environment.NewLine + Environment.NewLine, h );
                 }
             }
         }
@@ -471,45 +492,52 @@ public partial class Main : Form
         var confirmResult = MessageBox.Show( "Are you sure to delete this item? It will be deleted from the S3 bucket and your local computer.", "Confirm Delete", MessageBoxButtons.YesNo );
         if( confirmResult != DialogResult.Yes ) return;
 
-        var DeleteKeys = new List<string>();
-
-        if( this.treeView.SelectedNode.Tag is S3Object )
+        try
         {
-            DeleteKeys.Add( this.treeView.SelectedNode.GetKey( this.Folder.Prefix ) );
-        }
-        else if( this.treeView.SelectedNode.Tag is string )
-        {
-            DeleteKeys.AddRange( this.treeView.SelectedNode.GetKeys( this.Folder.Prefix ) );
-        }
+            var DeleteKeys = new List<string>();
 
-        foreach( var key in DeleteKeys )
-        {
-            this.Log( $"Deleting key '{key}'" );
-            await this.S3Client.DeleteAsync( this.Folder.Bucket, key, null );
-
-            // Delete the file on the local computer, if it exists
-            var LocalPath = this.Folder.GetLocalPath( key );
-            if( LocalPath != null && File.Exists( LocalPath ) )
+            if( this.treeView.SelectedNode.Tag is S3Object )
             {
-                Log( $"Deleting local file '{LocalPath}'" );
-                File.Delete( LocalPath );
+                DeleteKeys.Add( this.treeView.SelectedNode.GetKey( this.Folder.Prefix ) );
+            }
+            else if( this.treeView.SelectedNode.Tag is string )
+            {
+                DeleteKeys.AddRange( this.treeView.SelectedNode.GetKeys( this.Folder.Prefix ) );
             }
 
-            if( !this.Folder.DatFile ) return;
+            foreach( var key in DeleteKeys )
+            {
+                this.Log( $"Deleting key '{key}'" );
+                await this.S3Client.DeleteAsync( this.Folder.Bucket, key, null );
 
-            // Delete the .dat file
-            var datKey = GetDatFileKey( key );
-            this.Log( $"Deleting key '{datKey}'" );
-            await this.S3Client.DeleteAsync( this.Folder.Bucket, datKey, null );
-        }
+                // Delete the file on the local computer, if it exists
+                var LocalPath = this.Folder.GetLocalPath( key );
+                if( LocalPath != null && File.Exists( LocalPath ) )
+                {
+                    Log( $"Deleting local file '{LocalPath}'" );
+                    File.Delete( LocalPath );
+                }
 
-        if( this.treeView.SelectedNode?.Parent?.Nodes != null )
-        {
-            this.treeView.SelectedNode.Parent.Nodes.Remove( this.treeView.SelectedNode );
+                if( !this.Folder.DatFile ) return;
+
+                // Delete the .dat file
+                var datKey = GetDatFileKey( key );
+                this.Log( $"Deleting key '{datKey}'" );
+                await this.S3Client.DeleteAsync( this.Folder.Bucket, datKey, null );
+            }
+
+            if( this.treeView.SelectedNode?.Parent?.Nodes != null )
+            {
+                this.treeView.SelectedNode.Parent.Nodes.Remove( this.treeView.SelectedNode );
+            }
+            else
+            {
+                this.treeView.Nodes.Remove( this.treeView.SelectedNode );
+            }
         }
-        else
+        catch( Exception ex )
         {
-            this.treeView.Nodes.Remove( this.treeView.SelectedNode );
+            this.HandleException( "Could not delete files.", ex );
         }
     }
 
@@ -520,96 +548,103 @@ public partial class Main : Form
         var d = new RenameDialog( this.treeView.SelectedNode.Text ) { StartPosition = FormStartPosition.CenterParent };
         if( d.ShowDialog() != DialogResult.OK ) return;
 
-        var RenameKeys = new List<(string, string)>();
-
-        if( this.treeView.SelectedNode.Tag is S3Object s3Object )
+        try
         {
-            // Renaming a file
-            var CurrentKey = this.treeView.SelectedNode.GetKey( this.Folder.Prefix );
-            var CurrentPath = this.Folder.GetLocalPath( CurrentKey );
-            this.treeView.SelectedNode.Text = d.Name;
-            var NewKey = this.treeView.SelectedNode.GetKey( this.Folder.Prefix );
+            var RenameKeys = new List<(string, string)>();
 
-            RenameKeys.Add( (CurrentKey, NewKey) );
-
-            s3Object.Key = NewKey;
-            this.lblKey.Text = NewKey;
-
-            if( CurrentPath != null && File.Exists( CurrentPath ) )
+            if( this.treeView.SelectedNode.Tag is S3Object s3Object )
             {
-                var NewPath = this.Folder.GetLocalPath( NewKey );
-                if( NewPath != null ) File.Move( CurrentPath, NewPath );
-            }
-        }
-        else if( this.treeView.SelectedNode.Tag is string )
-        {
-            // Renaming a folder
-            var CurrentKeys = this.treeView.SelectedNode.GetKeys( this.Folder.Prefix );
-            var CurrentPath = this.Folder.GetLocalPath( this.treeView.SelectedNode.GetKey( this.Folder.Prefix ) );
-            this.treeView.SelectedNode.Text = d.Name;
-            var NewKeys = this.treeView.SelectedNode.GetKeys( this.Folder.Prefix );
+                // Renaming a file
+                var CurrentKey = this.treeView.SelectedNode.GetKey( this.Folder.Prefix );
+                var CurrentPath = this.Folder.GetLocalPath( CurrentKey );
+                this.treeView.SelectedNode.Text = d.Name;
+                var NewKey = this.treeView.SelectedNode.GetKey( this.Folder.Prefix );
 
-            RenameKeys.AddRange( CurrentKeys.Zip( NewKeys ) );
+                RenameKeys.Add( (CurrentKey, NewKey) );
 
-            if( CurrentPath != null && Directory.Exists( CurrentPath ) )
-            {
-                var NewPath = this.Folder.GetLocalPath( this.treeView.SelectedNode.GetKey( this.Folder.Prefix ) );
-                if( NewPath != null ) Directory.Move( CurrentPath, NewPath );
-            }
-        }
+                s3Object.Key = NewKey;
+                this.lblKey.Text = NewKey;
 
-        this.pbProgress.Value = 0;
-        this.pbProgress.Minimum = 0;
-        this.pbProgress.Maximum = RenameKeys.Count;
-
-        foreach( var tuple in RenameKeys )
-        {
-            this.Log( $"Renaming '{tuple.Item1}' to '{tuple.Item2}'" );
-            this.lblStatus.Text = $"Renaming '{tuple.Item1}'";
-
-            Task task = this.S3Client.CopyObjectAsync
-            (
-                this.Folder.Bucket,
-                tuple.Item1,
-                this.Folder.Bucket,
-                tuple.Item2
-            );
-
-            task = task.ContinueWith( t => this.S3Client.DeleteAsync( this.Folder.Bucket, tuple.Item1, null ) );
-
-            if( this.Folder.DatFile )
-            {
-                var datKey1 = GetDatFileKey( tuple.Item1 );
-                var datKey2 = GetDatFileKey( tuple.Item2 );
-
-                task = task.ContinueWith( async t =>
+                if( CurrentPath != null && File.Exists( CurrentPath ) )
                 {
-                    var metaData = await this.GetMetaData( datKey1 );
-                    metaData.History.Add( new FileHistory( this.Settings.UserName ?? "Unknown", "Renamed" )
-                    {
-                        Details = $"Renamed from '{tuple.Item1}' to '{tuple.Item2}'."
-                    } );
+                    var NewPath = this.Folder.GetLocalPath( NewKey );
+                    if( NewPath != null ) File.Move( CurrentPath, NewPath );
+                }
+            }
+            else if( this.treeView.SelectedNode.Tag is string )
+            {
+                // Renaming a folder
+                var CurrentKeys = this.treeView.SelectedNode.GetKeys( this.Folder.Prefix );
+                var CurrentPath = this.Folder.GetLocalPath( this.treeView.SelectedNode.GetKey( this.Folder.Prefix ) );
+                this.treeView.SelectedNode.Text = d.Name;
+                var NewKeys = this.treeView.SelectedNode.GetKeys( this.Folder.Prefix );
 
-                    var json = JsonSerializer.Serialize( metaData );
+                RenameKeys.AddRange( CurrentKeys.Zip( NewKeys ) );
 
-                    await this.S3Client.PutObjectAsync( new PutObjectRequest
-                    {
-                        ContentType = "application/json",
-                        BucketName = this.Folder.Bucket,
-                        ContentBody = json,
-                        Key = datKey2,
-                    } );
-                } );
-
-                task = task.ContinueWith( t => this.S3Client.DeleteAsync( this.Folder.Bucket, datKey1, null ) );
+                if( CurrentPath != null && Directory.Exists( CurrentPath ) )
+                {
+                    var NewPath = this.Folder.GetLocalPath( this.treeView.SelectedNode.GetKey( this.Folder.Prefix ) );
+                    if( NewPath != null ) Directory.Move( CurrentPath, NewPath );
+                }
             }
 
-            await task;
-            this.pbProgress.Value++;
-        }
+            this.pbProgress.Value = 0;
+            this.pbProgress.Minimum = 0;
+            this.pbProgress.Maximum = RenameKeys.Count;
 
-        this.lblStatus.Text = $"All files renamed";
-        this.pbProgress.Value = this.pbProgress.Maximum;
+            foreach( var tuple in RenameKeys )
+            {
+                this.Log( $"Renaming '{tuple.Item1}' to '{tuple.Item2}'" );
+                this.lblStatus.Text = $"Renaming '{tuple.Item1}'";
+
+                Task task = this.S3Client.CopyObjectAsync
+                (
+                    this.Folder.Bucket,
+                    tuple.Item1,
+                    this.Folder.Bucket,
+                    tuple.Item2
+                );
+
+                task = task.ContinueWith( t => this.S3Client.DeleteAsync( this.Folder.Bucket, tuple.Item1, null ) );
+
+                if( this.Folder.DatFile )
+                {
+                    var datKey1 = GetDatFileKey( tuple.Item1 );
+                    var datKey2 = GetDatFileKey( tuple.Item2 );
+
+                    task = task.ContinueWith( async t =>
+                    {
+                        var metaData = await this.GetMetaData( datKey1 );
+                        metaData.History.Add( new FileHistory( this.Settings.UserName ?? "Unknown", "Renamed" )
+                        {
+                            Details = $"Renamed from '{tuple.Item1}' to '{tuple.Item2}'."
+                        } );
+
+                        var json = JsonSerializer.Serialize( metaData );
+
+                        await this.S3Client.PutObjectAsync( new PutObjectRequest
+                        {
+                            ContentType = "application/json",
+                            BucketName = this.Folder.Bucket,
+                            ContentBody = json,
+                            Key = datKey2,
+                        } );
+                    } );
+
+                    task = task.ContinueWith( t => this.S3Client.DeleteAsync( this.Folder.Bucket, datKey1, null ) );
+                }
+
+                await task;
+                this.pbProgress.Value++;
+            }
+
+            this.lblStatus.Text = $"All files renamed";
+            this.pbProgress.Value = this.pbProgress.Maximum;
+        }
+        catch( Exception ex )
+        {
+            this.HandleException( "Could not rename files.", ex );
+        }
     }
 
     private void TreeViewNodeShare_Click( object sender, EventArgs e )
@@ -714,72 +749,79 @@ public partial class Main : Form
     {
         if( e.Data == null || this.Folder == null || this.S3Client == null ) return;
 
-        var point = this.treeView.PointToClient( new Point( e.X, e.Y ) );
-        var node = this.treeView.GetNodeAt( point );
-
-        var prefix = this.Folder.Prefix;
-
-        if( node != null )
+        try
         {
-            if( node.Nodes.Count > 0 )
-            {
-                prefix += node.FullPath;
-            }
-            else
-            {
-                prefix += string.Join( "/", node.FullPath.Split( "/" ).SkipLast( 1 ) );
-            }
+            var point = this.treeView.PointToClient( new Point( e.X, e.Y ) );
+            var node = this.treeView.GetNodeAt( point );
 
-            if( !string.IsNullOrEmpty( prefix ) && !prefix.EndsWith( "/" ) )
+            var prefix = this.Folder.Prefix;
+
+            if( node != null )
             {
-                prefix += "/";
-            }
-        }
-
-        var objects = new List<(string, string)>();
-        var paths = (string[])e.Data.GetData( DataFormats.FileDrop );
-
-        foreach( var path in paths )
-        {
-            if( Directory.Exists( path ) )
-            {
-                var tempPrefix = prefix + Path.GetFileName( path );
-                var files = Directory.GetFiles( path, "*.*", new EnumerationOptions { RecurseSubdirectories = true } );
-
-                foreach( var file in files )
+                if( node.Nodes.Count > 0 )
                 {
-                    var relativePath = file[path.Length..];
-                    var key = tempPrefix + relativePath.Replace( "\\", "/" );
-                    objects.Add( (file, key) );
+                    prefix += node.FullPath;
+                }
+                else
+                {
+                    prefix += string.Join( "/", node.FullPath.Split( "/" ).SkipLast( 1 ) );
+                }
+
+                if( !string.IsNullOrEmpty( prefix ) && !prefix.EndsWith( "/" ) )
+                {
+                    prefix += "/";
                 }
             }
-            else if( File.Exists( path ) )
+
+            var objects = new List<(string, string)>();
+            var paths = (string[])e.Data.GetData( DataFormats.FileDrop );
+
+            foreach( var path in paths )
             {
-                var key = prefix + Path.GetFileName( path );
-                objects.Add( (path, key) );
+                if( Directory.Exists( path ) )
+                {
+                    var tempPrefix = prefix + Path.GetFileName( path );
+                    var files = Directory.GetFiles( path, "*.*", new EnumerationOptions { RecurseSubdirectories = true } );
+
+                    foreach( var file in files )
+                    {
+                        var relativePath = file[path.Length..];
+                        var key = tempPrefix + relativePath.Replace( "\\", "/" );
+                        objects.Add( (file, key) );
+                    }
+                }
+                else if( File.Exists( path ) )
+                {
+                    var key = prefix + Path.GetFileName( path );
+                    objects.Add( (path, key) );
+                }
             }
+
+            this.pbProgress.Value = 0;
+            this.pbProgress.Minimum = 0;
+            this.pbProgress.Maximum = objects.Count;
+
+            foreach( var m in objects )
+            {
+                this.Log( $"Uploading file from '{m.Item1}' to '{m.Item2}'" );
+                this.lblStatus.Text = $"Uploading {m.Item1}";
+
+                await this.CreateFile( m.Item2, m.Item1 );
+
+                var info = new FileInfo( m.Item1 );
+                this.AddObject( new S3Object { Key = m.Item2, Size = info.Length, LastModified = DateTime.Now } );
+
+                this.pbProgress.Value++;
+            }
+
+            this.treeView.Sort();
+            this.lblStatus.Text = $"All files uploaded";
+            this.pbProgress.Value = this.pbProgress.Maximum;
         }
-
-        this.pbProgress.Value = 0;
-        this.pbProgress.Minimum = 0;
-        this.pbProgress.Maximum = objects.Count;
-
-        foreach( var m in objects )
+        catch( Exception ex )
         {
-            this.Log( $"Uploading file from '{m.Item1}' to '{m.Item2}'" );
-            this.lblStatus.Text = $"Uploading {m.Item1}";
-
-            await this.CreateFile( m.Item2, m.Item1 );
-
-            var info = new FileInfo( m.Item1 );
-            this.AddObject( new S3Object { Key = m.Item2, Size = info.Length, LastModified = DateTime.Now } );
-
-            this.pbProgress.Value++;
+            this.HandleException( "Could not upload files via drag-n-drop.", ex );
         }
-
-        this.treeView.Sort();
-        this.lblStatus.Text = $"All files uploaded";
-        this.pbProgress.Value = this.pbProgress.Maximum;
     }
 
     private void CbFolder_KeyUp( object sender, KeyEventArgs e )
@@ -862,85 +904,99 @@ public partial class Main : Form
         this.lblStatus.Text = "Loading settings...";
         this.pbProgress.Value = 0;
 
-        if( File.Exists( SettingsFileName ) )
+        try
         {
-            var json = File.ReadAllText( SettingsFileName );
-            this.Settings = JsonSerializer.Deserialize<Models.Settings>( json );
-
-            if( this.Settings != null )
+            if( File.Exists( SettingsFileName ) )
             {
-                var iv = Convert.FromBase64String( AesIV );
-                var key = Convert.FromBase64String( AesKey );
+                var json = File.ReadAllText( SettingsFileName );
+                this.Settings = JsonSerializer.Deserialize<Models.Settings>( json );
 
-                foreach( var f in this.Settings.Folders )
+                if( this.Settings != null )
                 {
-                    if( !string.IsNullOrWhiteSpace( f.AwsAccessKey ) )
+                    var iv = Convert.FromBase64String( AesIV );
+                    var key = Convert.FromBase64String( AesKey );
+
+                    foreach( var f in this.Settings.Folders )
                     {
-                        f.AwsAccessKey = Classes.Encryption.decrypt( Convert.FromBase64String( f.AwsAccessKey ), key, iv );
+                        if( !string.IsNullOrWhiteSpace( f.AwsAccessKey ) )
+                        {
+                            f.AwsAccessKey = Classes.Encryption.decrypt( Convert.FromBase64String( f.AwsAccessKey ), key, iv );
+                        }
+
+                        if( !string.IsNullOrWhiteSpace( f.AwsSecretKey ) )
+                        {
+                            f.AwsSecretKey = Classes.Encryption.decrypt( Convert.FromBase64String( f.AwsSecretKey ), key, iv );
+                        }
                     }
 
-                    if( !string.IsNullOrWhiteSpace( f.AwsSecretKey ) )
-                    {
-                        f.AwsSecretKey = Classes.Encryption.decrypt( Convert.FromBase64String( f.AwsSecretKey ), key, iv );
-                    }
+                    if( this.Settings.WindowWidth > 0 ) this.Width = this.Settings.WindowWidth;
+                    if( this.Settings.WindowHeight > 0 ) this.Height = this.Settings.WindowHeight;
+                    if( this.Settings.TreeViewWidth > 0 ) this.splitContainer.SplitterDistance = this.Settings.TreeViewWidth;
+                    //if( this.Settings.FontSize > 0 ) this.SetFontSize( this.Settings.FontSize );
+                    this.SetFontSize( 9 );
+
+                    Log( "Settings loaded" );
                 }
-
-                if( this.Settings.WindowWidth > 0 ) this.Width = this.Settings.WindowWidth;
-                if( this.Settings.WindowHeight > 0 ) this.Height = this.Settings.WindowHeight;
-                if( this.Settings.TreeViewWidth > 0 ) this.splitContainer.SplitterDistance = this.Settings.TreeViewWidth;
-                //if( this.Settings.FontSize > 0 ) this.SetFontSize( this.Settings.FontSize );
-                this.SetFontSize( 9 );
-
-                Log( "Settings loaded" );
             }
+
+            this.lblStatus.Text = "Settings loaded";
+            this.pbProgress.Value = this.pbProgress.Maximum;
+
+            this.Settings ??= new Models.Settings();
+            if( string.IsNullOrWhiteSpace( this.Settings.UserName ) ) this.tbSettings.PerformClick();
         }
-
-        this.lblStatus.Text = "Settings loaded";
-        this.pbProgress.Value = this.pbProgress.Maximum;
-
-        this.Settings ??= new Models.Settings();
-        if( string.IsNullOrWhiteSpace( this.Settings.UserName ) ) this.tbSettings.PerformClick();
+        catch( Exception ex )
+        {
+            this.HandleException( "Could not load settings.", ex );
+        }
     }
 
     private void SaveSettings()
     {
         if( this.Settings == null ) return;
 
-        this.lblStatus.Text = "Saving settings...";
-        this.pbProgress.Value = 0;
-
-        var clone = this.Settings.Clone();
-        clone.WindowWidth = this.Width;
-        clone.WindowHeight = this.Height;
-        clone.TreeViewWidth = this.splitContainer.SplitterDistance;
-        clone.FontSize = this.treeView.Font.Size;
-
-        var iv = Convert.FromBase64String( AesIV );
-        var key = Convert.FromBase64String( AesKey );
-
-        foreach( var f in clone.Folders )
+        try
         {
-            if( !string.IsNullOrWhiteSpace( f.AwsAccessKey ) )
+            this.lblStatus.Text = "Saving settings...";
+            this.pbProgress.Value = 0;
+
+            var clone = this.Settings.Clone();
+            clone.WindowWidth = this.Width;
+            clone.WindowHeight = this.Height;
+            clone.TreeViewWidth = this.splitContainer.SplitterDistance;
+            clone.FontSize = this.treeView.Font.Size;
+
+            var iv = Convert.FromBase64String( AesIV );
+            var key = Convert.FromBase64String( AesKey );
+
+            foreach( var f in clone.Folders )
             {
-                f.AwsAccessKey = Convert.ToBase64String( Classes.Encryption.encrypt( f.AwsAccessKey, key, iv ) );
+                if( !string.IsNullOrWhiteSpace( f.AwsAccessKey ) )
+                {
+                    f.AwsAccessKey = Convert.ToBase64String( Classes.Encryption.encrypt( f.AwsAccessKey, key, iv ) );
+                }
+
+                if( !string.IsNullOrWhiteSpace( f.AwsSecretKey ) )
+                {
+                    f.AwsSecretKey = Convert.ToBase64String( Classes.Encryption.encrypt( f.AwsSecretKey, key, iv ) );
+                }
             }
 
-            if( !string.IsNullOrWhiteSpace( f.AwsSecretKey ) )
+            var json = JsonSerializer.Serialize( clone, new JsonSerializerOptions
             {
-                f.AwsSecretKey = Convert.ToBase64String( Classes.Encryption.encrypt( f.AwsSecretKey, key, iv ) );
-            }
+                WriteIndented = true
+            } );
+
+            File.WriteAllText( SettingsFileName, json );
+
+            Log( "Settings saved" );
+            this.lblStatus.Text = "Settings saved";
+            this.pbProgress.Value = this.pbProgress.Maximum;
         }
-
-        var json = JsonSerializer.Serialize( clone, new JsonSerializerOptions
+        catch( Exception ex )
         {
-            WriteIndented = true
-        } );
-
-        File.WriteAllText( SettingsFileName, json );
-
-        Log( "Settings saved" );
-        this.lblStatus.Text = "Settings saved";
-        this.pbProgress.Value = this.pbProgress.Maximum;
+            this.HandleException( "Could not save settings.", ex );
+        }
     }
 
     private void Log( string Message, Exception? ex = null )
@@ -974,6 +1030,7 @@ public partial class Main : Form
     private void HandleException( string Message, Exception ex )
     {
         this.Log( Message, ex );
+        this.lblStatus.Text = Message;
 
         new ExceptionDialog( Message, ex ) { StartPosition = FormStartPosition.CenterParent }.ShowDialog();
     }
@@ -1005,26 +1062,31 @@ public partial class Main : Form
             var node = new TreeNode( part, 3, 3 )
             {
                 Tag = string.Join( "/", parts.Take( i + 1 ) ) + "/",
-                //ContextMenuStrip = this.treeViewContextMenu
             };
 
             nodes.Add( node );
             nodes = node.Nodes;
         }
 
-        var himl = NativeMethods.SHGetFileInfo( obj.Key,
-                                                0,
-                                                ref this.shfi,
-                                                (uint)Marshal.SizeOf( this.shfi ),
-                                                NativeMethods.SHGFI_DISPLAYNAME
-                                                  | NativeMethods.SHGFI_SYSICONINDEX
-                                                  | NativeMethods.SHGFI_SMALLICON
-                                                  | NativeMethods.SHGFI_USEFILEATTRIBUTES );
+        try
+        {
+            var himl = NativeMethods.SHGetFileInfo( obj.Key,
+                                                    0,
+                                                    ref this.shfi,
+                                                    (uint)Marshal.SizeOf( this.shfi ),
+                                                    NativeMethods.SHGFI_DISPLAYNAME
+                                                      | NativeMethods.SHGFI_SYSICONINDEX
+                                                      | NativeMethods.SHGFI_SMALLICON
+                                                      | NativeMethods.SHGFI_USEFILEATTRIBUTES );
+        }
+        catch( Exception ex )
+        {
+            this.Log( $"Could not get icon for file '{obj.Key}'.", ex );
+        }
 
         var leaf = new TreeNode( parts[^1], this.shfi.iIcon, this.shfi.iIcon )
         {
             Tag = obj,
-            //ContextMenuStrip = this.treeViewContextMenu
         };
 
         nodes.Add( leaf );
@@ -1097,8 +1159,13 @@ public partial class Main : Form
             var metaData = JsonSerializer.Deserialize<FileMetaData>( jsonReader.ReadToEnd() );
             return metaData ?? new FileMetaData();
         }
-        catch
+        catch( Exception ex )
         {
+            if( !string.Equals( ex.Message, "The specified key does not exist." ) )
+            {
+                this.HandleException( $"Could not load file meta data '{Key}'.", ex );
+            }
+
             // The file might not exist
             return new FileMetaData();
         }
@@ -1126,132 +1193,154 @@ public partial class Main : Form
     {
         if( this.S3Client == null || this.Folder == null ) return;
 
-        Task task = this.S3Client.PutObjectAsync( new PutObjectRequest
+        try
         {
-            BucketName = this.Folder.Bucket,
-            FilePath = Path,
-            Key = Key,
-        } );
-
-        if( !this.Folder.DatFile )
-        {
-            await task;
-            return;
-        }
-
-        var datKey = GetDatFileKey( Key );
-
-        task = task.ContinueWith( async t =>
-        {
-            var metaData = new FileMetaData();
-            metaData.History.Add( new FileHistory( this.Settings?.UserName ?? "Unknown", "Created" ) );
-
-            var json = JsonSerializer.Serialize( metaData );
-
-            await this.S3Client.PutObjectAsync( new PutObjectRequest
+            Task task = this.S3Client.PutObjectAsync( new PutObjectRequest
             {
-                ContentType = "application/json",
                 BucketName = this.Folder.Bucket,
-                ContentBody = json,
-                Key = datKey,
+                FilePath = Path,
+                Key = Key,
             } );
-        } );
 
-        await task;
+            if( !this.Folder.DatFile )
+            {
+                await task;
+                return;
+            }
+
+            var datKey = GetDatFileKey( Key );
+
+            task = task.ContinueWith( async t =>
+            {
+                var metaData = new FileMetaData();
+                metaData.History.Add( new FileHistory( this.Settings?.UserName ?? "Unknown", "Created" ) );
+
+                var json = JsonSerializer.Serialize( metaData );
+
+                await this.S3Client.PutObjectAsync( new PutObjectRequest
+                {
+                    ContentType = "application/json",
+                    BucketName = this.Folder.Bucket,
+                    ContentBody = json,
+                    Key = datKey,
+                } );
+            } );
+
+            await task;
+        }
+        catch( Exception ex )
+        {
+            this.Log( "Could not create file.", ex );
+            throw;
+        }
     }
 
     private async Task SyncDown( LocalLink link )
     {
         if( this.Settings == null || this.S3Client == null || this.Folder == null ) return;
 
-        var objects = await S3Client.GetObjects( this.Folder.Bucket, link.Prefix ).ToListAsync();
-
-        this.pbProgress.Value = 0;
-        this.pbProgress.Minimum = 0;
-        this.pbProgress.Maximum = objects.Count;
-
-        foreach( var obj in objects )
+        try
         {
-            var parts = obj.Key.Split( "/" );
-            if( parts[^1].StartsWith( "_" ) && parts[^1].EndsWith( ".dat" ) )
+            var objects = await S3Client.GetObjects( this.Folder.Bucket, link.Prefix ).ToListAsync();
+
+            this.pbProgress.Value = 0;
+            this.pbProgress.Minimum = 0;
+            this.pbProgress.Maximum = objects.Count;
+
+            foreach( var obj in objects )
             {
+                var parts = obj.Key.Split( "/" );
+                if( parts[^1].StartsWith( "_" ) && parts[^1].EndsWith( ".dat" ) )
+                {
+                    this.pbProgress.Value++;
+                    continue;
+                }
+
+                var path = link.GetLocalPath( obj.Key );
+                if( string.IsNullOrWhiteSpace( path ) ) return;
+
+                var info = new FileInfo( path );
+                this.lblStatus.Text = $"Downloading {info.Name}";
+
+                if( File.Exists( path ) && info.LastWriteTimeUtc > obj.LastModified )
+                {
+                    // Local file is newer, don't overwrite it
+                    this.pbProgress.Value++;
+                    continue;
+                }
+
+                // Download the file
+                await S3Client.DownloadToFilePathAsync( this.Folder.Bucket, obj.Key, path, null );
+                File.SetLastWriteTimeUtc( path, obj.LastModified.ToUniversalTime() );
+
                 this.pbProgress.Value++;
-                continue;
             }
 
-            var path = link.GetLocalPath( obj.Key );
-            if( string.IsNullOrWhiteSpace( path ) ) return;
-
-            var info = new FileInfo( path );
-            this.lblStatus.Text = $"Downloading {info.Name}";
-
-            if( File.Exists( path ) && info.LastWriteTimeUtc > obj.LastModified )
-            {
-                // Local file is newer, don't overwrite it
-                this.pbProgress.Value++;
-                continue;
-            }
-
-            // Download the file
-            await S3Client.DownloadToFilePathAsync( this.Folder.Bucket, obj.Key, path, null );
-            File.SetLastWriteTimeUtc( path, obj.LastModified.ToUniversalTime() );
-
-            this.pbProgress.Value++;
+            this.pbProgress.Value = this.pbProgress.Maximum;
+            this.lblStatus.Text = "All files downloaded";
         }
-
-        this.pbProgress.Value = this.pbProgress.Maximum;
-        this.lblStatus.Text = "All files downloaded";
+        catch( Exception ex )
+        {
+            this.HandleException( "Could not sync files to local computer.", ex );
+        }
     }
 
     private async Task SyncUp( LocalLink link )
     {
         if( this.Settings == null || this.S3Client == null || this.Folder == null ) return;
 
-        var objects = await S3Client.GetObjects( this.Folder.Bucket, link.Prefix ).ToListAsync();
-        var files = Directory.GetFiles( link.Path, "*.*", new EnumerationOptions { RecurseSubdirectories = true } );
-
-        this.pbProgress.Value = 0;
-        this.pbProgress.Minimum = 0;
-        this.pbProgress.Maximum = files.Length;
-
-        foreach( var file in files )
+        try
         {
-            var info = new FileInfo( file );
-            var key = link.GetRemoteKey( file );
-            var s3Object = objects.FirstOrDefault( m => string.Equals( key, m.Key ) );
+            var objects = await S3Client.GetObjects( this.Folder.Bucket, link.Prefix ).ToListAsync();
+            var files = Directory.GetFiles( link.Path, "*.*", new EnumerationOptions { RecurseSubdirectories = true } );
 
-            if( s3Object != null && s3Object.LastModified.ToUniversalTime() >= info.LastWriteTimeUtc )
+            this.pbProgress.Value = 0;
+            this.pbProgress.Minimum = 0;
+            this.pbProgress.Maximum = files.Length;
+
+            foreach( var file in files )
             {
-                // No changes
+                var info = new FileInfo( file );
+                var key = link.GetRemoteKey( file );
+                var s3Object = objects.FirstOrDefault( m => string.Equals( key, m.Key ) );
+
+                if( s3Object != null && s3Object.LastModified.ToUniversalTime() >= info.LastWriteTimeUtc )
+                {
+                    // No changes
+                    this.pbProgress.Value++;
+                    continue;
+                }
+
+                this.lblStatus.Text = $"Uploading {info.Name}";
+
+                await S3Client.PutObjectAsync( new PutObjectRequest
+                {
+                    BucketName = this.Folder.Bucket,
+                    FilePath = file,
+                    Key = key,
+                } );
+
+                var response = await S3Client.GetObjectAsync( this.Folder.Bucket, key );
+
+                s3Object = new S3Object
+                {
+                    Key = key,
+                    Size = info.Length,
+                    LastModified = response.LastModified,
+                };
+
+                File.SetLastWriteTimeUtc( file, s3Object.LastModified.ToUniversalTime() );
+                this.AddObject( s3Object );
                 this.pbProgress.Value++;
-                continue;
             }
 
-            this.lblStatus.Text = $"Uploading {info.Name}";
-
-            await S3Client.PutObjectAsync( new PutObjectRequest
-            {
-                BucketName = this.Folder.Bucket,
-                FilePath = file,
-                Key = key,
-            } );
-
-            var response = await S3Client.GetObjectAsync( this.Folder.Bucket, key );
-
-            s3Object = new S3Object
-            {
-                Key = key,
-                Size = info.Length,
-                LastModified = response.LastModified,
-            };
-
-            File.SetLastWriteTimeUtc( file, s3Object.LastModified.ToUniversalTime() );
-            this.AddObject( s3Object );
-            this.pbProgress.Value++;
+            this.pbProgress.Value = this.pbProgress.Maximum;
+            this.lblStatus.Text = "All files uploaded";
         }
-
-        this.pbProgress.Value = this.pbProgress.Maximum;
-        this.lblStatus.Text = "All files uploaded";
+        catch( Exception ex )
+        {
+            this.HandleException( $"Could not sync files to the S3 bucket.", ex );
+        }
     }
 }
 
