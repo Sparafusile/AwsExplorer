@@ -8,6 +8,7 @@ AwsExplorer allows a user to manage files located in a remote AWS S3 bucket, upl
 - Download files from S3 to your computer
 - Generate a signed URL to share files even if they are not public
 - Keep files on your computer and in S3 synced up
+- Copy/Move files between buckets
 - Optionally, track updates to files in S3
 - Optionally, associate comments to each file
 
@@ -30,3 +31,9 @@ You can download a file or a folder to your local computer by right-clicking on 
 ![Download Screen](Screenshots/ShareScreen.png)
 
 By default, all files in an S3 bucket are private. However, you can share these files by generating a signed URL and distrubing the URL. The URL will time out after a pre-determined amount of time.
+
+## Copy/Move files between buckets
+
+![Copy/Move Screen](Screenshots/CopyMoveFiles.png)
+
+With AWS Explorer, you can easily move files or a subset of files between buckets.
