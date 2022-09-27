@@ -36,7 +36,9 @@
             this.tbSync = new System.Windows.Forms.ToolStripButton();
             this.tbDownload = new System.Windows.Forms.ToolStripButton();
             this.tbUpload = new System.Windows.Forms.ToolStripButton();
-            this.tbMoveBucket = new System.Windows.Forms.ToolStripButton();
+            this.tbMoveFiles = new System.Windows.Forms.ToolStripDropDownButton();
+            this.sameAccountToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.differentAccountToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tbCollapseAll = new System.Windows.Forms.ToolStripButton();
             this.tbViewLogs = new System.Windows.Forms.ToolStripButton();
             this.tbFontIncrease = new System.Windows.Forms.ToolStripButton();
@@ -89,7 +91,7 @@
             this.tbSync,
             this.tbDownload,
             this.tbUpload,
-            this.tbMoveBucket,
+            this.tbMoveFiles,
             this.tbCollapseAll,
             this.tbViewLogs,
             this.tbFontIncrease,
@@ -128,6 +130,7 @@
             // 
             this.tbSync.AutoSize = false;
             this.tbSync.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tbSync.Enabled = false;
             this.tbSync.Image = ((System.Drawing.Image)(resources.GetObject("tbSync.Image")));
             this.tbSync.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.tbSync.ImageTransparentColor = System.Drawing.Color.Magenta;
@@ -140,6 +143,7 @@
             // 
             this.tbDownload.AutoSize = false;
             this.tbDownload.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tbDownload.Enabled = false;
             this.tbDownload.Image = ((System.Drawing.Image)(resources.GetObject("tbDownload.Image")));
             this.tbDownload.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.tbDownload.ImageTransparentColor = System.Drawing.Color.Magenta;
@@ -152,6 +156,7 @@
             // 
             this.tbUpload.AutoSize = false;
             this.tbUpload.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tbUpload.Enabled = false;
             this.tbUpload.Image = ((System.Drawing.Image)(resources.GetObject("tbUpload.Image")));
             this.tbUpload.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.tbUpload.ImageTransparentColor = System.Drawing.Color.Magenta;
@@ -160,23 +165,39 @@
             this.tbUpload.Text = "Sync Files to Cloud";
             this.tbUpload.Click += new System.EventHandler(this.TbUpload_Click);
             // 
-            // tbMoveBucket
+            // tbMoveFiles
             // 
-            this.tbMoveBucket.AutoSize = false;
-            this.tbMoveBucket.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tbMoveBucket.Image = ((System.Drawing.Image)(resources.GetObject("tbMoveBucket.Image")));
-            this.tbMoveBucket.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
-            this.tbMoveBucket.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tbMoveBucket.Name = "tbMoveBucket";
-            this.tbMoveBucket.Size = new System.Drawing.Size(37, 37);
-            this.tbMoveBucket.Text = "toolStripButton1";
-            this.tbMoveBucket.ToolTipText = "Move File to Another Bucket";
-            this.tbMoveBucket.Click += new System.EventHandler(this.TbMoveBucket_Click);
+            this.tbMoveFiles.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tbMoveFiles.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.sameAccountToolStripMenuItem,
+            this.differentAccountToolStripMenuItem});
+            this.tbMoveFiles.Enabled = false;
+            this.tbMoveFiles.Image = ((System.Drawing.Image)(resources.GetObject("tbMoveFiles.Image")));
+            this.tbMoveFiles.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+            this.tbMoveFiles.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tbMoveFiles.Name = "tbMoveFiles";
+            this.tbMoveFiles.Size = new System.Drawing.Size(37, 37);
+            this.tbMoveFiles.Text = "Move Files to Another Bucket";
+            // 
+            // sameAccountToolStripMenuItem
+            // 
+            this.sameAccountToolStripMenuItem.Name = "sameAccountToolStripMenuItem";
+            this.sameAccountToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.sameAccountToolStripMenuItem.Text = "Same Account";
+            this.sameAccountToolStripMenuItem.Click += new System.EventHandler(this.TbMoveBucket_Click);
+            // 
+            // differentAccountToolStripMenuItem
+            // 
+            this.differentAccountToolStripMenuItem.Name = "differentAccountToolStripMenuItem";
+            this.differentAccountToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.differentAccountToolStripMenuItem.Text = "Different Account";
+            this.differentAccountToolStripMenuItem.Click += new System.EventHandler(this.TbMoveAccount_Click);
             // 
             // tbCollapseAll
             // 
             this.tbCollapseAll.AutoSize = false;
             this.tbCollapseAll.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tbCollapseAll.Enabled = false;
             this.tbCollapseAll.Image = ((System.Drawing.Image)(resources.GetObject("tbCollapseAll.Image")));
             this.tbCollapseAll.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.tbCollapseAll.ImageTransparentColor = System.Drawing.Color.Magenta;
@@ -593,6 +614,8 @@
         private ToolStripButton tbUpload;
         private ToolStripButton tbCollapseAll;
         private NotifyIcon notifyIcon;
-        private ToolStripButton tbMoveBucket;
+        private ToolStripDropDownButton tbMoveFiles;
+        private ToolStripMenuItem sameAccountToolStripMenuItem;
+        private ToolStripMenuItem differentAccountToolStripMenuItem;
     }
 }

@@ -222,6 +222,7 @@
             // 
             // rbCopy
             // 
+            this.rbCopy.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.rbCopy.AutoSize = true;
             this.rbCopy.Checked = true;
             this.rbCopy.Location = new System.Drawing.Point(3, 3);
@@ -234,6 +235,7 @@
             // 
             // rbMove
             // 
+            this.rbMove.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.rbMove.AutoSize = true;
             this.rbMove.Location = new System.Drawing.Point(88, 3);
             this.rbMove.Name = "rbMove";

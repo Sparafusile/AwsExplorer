@@ -121,6 +121,13 @@ public partial class Main : Form
     private async void CbFolder_SelectedIndexChanged( object? sender = null, EventArgs? e = null )
     {
         await this.LoadRemoteFiles( false );
+
+        this.tbAddFolder.Enabled = true;
+        this.tbCollapseAll.Enabled = true;
+        this.tbDownload.Enabled = true;
+        this.tbMoveFiles.Enabled = true;
+        this.tbSync.Enabled = true;
+        this.tbUpload.Enabled = true;
     }
 
     private async Task LoadRemoteFiles( bool RestoreState )
@@ -233,13 +240,13 @@ public partial class Main : Form
         }
 
         var srcPrefix = this.Folder.Prefix + d.SourcePrefix;
-        var objects = await S3Client.GetObjects( this.Folder.Bucket, srcPrefix ).ToListAsync();
+        var srcObjects = await S3Client.GetObjects( this.Folder.Bucket, srcPrefix ).ToListAsync();
 
         this.pbProgress.Value = 0;
         this.pbProgress.Minimum = 0;
-        this.pbProgress.Maximum = objects.Count;
+        this.pbProgress.Maximum = srcObjects.Count;
 
-        foreach( var m in objects )
+        foreach( var m in srcObjects )
         {
             this.lblStatus.Text = $"{( d.MoveFiles ? "Moving" : "Copying" )} {m.Key.Split( '/' ).Last()}";
 
@@ -276,6 +283,100 @@ public partial class Main : Form
         var NewFolder = this.Folder.Clone();
         NewFolder.Bucket = d.DestinationBucket;
         NewFolder.Prefix = d.DestinationPrefix;
+
+        this.Settings.Folders.Add( NewFolder );
+        this.cbFolder.Items.Add( NewFolder );
+        this.cbFolder.SelectedItem = NewFolder;
+        this.SaveSettings();
+    }
+
+    private async void TbMoveAccount_Click( object sender, EventArgs e )
+    {
+        if( this.S3Client == null || this.Settings == null || this.Folder == null ) return;
+
+        string? selectedPrefix = null;
+        if( this.treeView.SelectedNode?.Tag is string folder )
+        {
+            selectedPrefix = this.treeView.SelectedNode.FullPath + "/";
+        }
+
+        var prefixes = this.GetPrefixes( this.treeView.Nodes );
+        var d = new MoveAccountDialog( prefixes, selectedPrefix ) { StartPosition = FormStartPosition.CenterParent };
+        if( d.ShowDialog( this ) != DialogResult.OK ) return;
+
+        if( d.MoveFiles )
+        {
+            var result = MessageBox.Show( this, "You are about to move files from the source account to the destination account. The files in the source bucket that match the prefix will be deleted. Do you whish to proceed?", "Confirm File Move", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning );
+            if( result != DialogResult.OK ) return;
+        }
+
+        var srcClient = this.S3Client;
+        var region = Amazon.RegionEndpoint.GetBySystemName( d.Region ?? "us-east-1" );
+        using var destClient = new AmazonS3Client( d.AwsAccessKey, d.AwsSecretKey, region );
+
+        var srcPrefix = this.Folder.Prefix + d.SourcePrefix;
+        var srcObjects = await srcClient.GetObjects( this.Folder.Bucket, srcPrefix ).ToListAsync();
+
+        this.pbProgress.Value = 0;
+        this.pbProgress.Minimum = 0;
+        this.pbProgress.Maximum = srcObjects.Count;
+
+        foreach( var m in srcObjects )
+        {
+            this.lblStatus.Text = $"{( d.MoveFiles ? "Moving" : "Copying" )} {m.Key.Split( '/' ).Last()}";
+
+            var destKey = m.Key;
+
+            if( !string.IsNullOrWhiteSpace( d.SourcePrefix ) )
+            {
+                destKey = destKey[d.SourcePrefix.Length..];
+            }
+
+            if( !string.IsNullOrWhiteSpace( d.DestinationPrefix ) )
+            {
+                destKey = d.DestinationPrefix + destKey;
+            }
+
+            destKey = destKey.Replace( "//", "/" );
+
+            this.Log( $"Copying {this.Folder.Bucket}/{m.Key} to {d.DestinationBucket}/{destKey}" );
+
+            var tempPath = Path.GetTempFileName();
+
+            // Download the file from the source bucket
+            Task task = srcClient.DownloadToFilePathAsync( this.Folder.Bucket, m.Key, tempPath, null );
+
+            // Upload the file to the destination bucket
+            task = task.ContinueWith( t => destClient.PutObjectAsync( new PutObjectRequest
+            {
+                BucketName = d.DestinationBucket,
+                FilePath = tempPath,
+                Key = destKey,
+            } ) );
+
+            if( d.MoveFiles )
+            {
+                // Delete the file from the source  bucket
+                task = task.ContinueWith( t => srcClient.DeleteObjectAsync( this.Folder.Bucket, m.Key ) );
+            }
+
+            await task;
+
+            this.pbProgress.Value++;
+        }
+
+        this.pbProgress.Value = this.pbProgress.Maximum;
+        this.lblStatus.Text = $"All files have been {( d.MoveFiles ? "moved" : "copied" )}";
+
+        var NewFolder = new Folder
+        {
+            AwsAccessKey = d.AwsAccessKey,
+            AwsSecretKey = d.AwsSecretKey,
+            Region = d.Region,
+            Bucket = d.DestinationBucket,
+            Prefix = d.DestinationPrefix,
+            DatFile = this.Folder.DatFile,
+        };
 
         this.Settings.Folders.Add( NewFolder );
         this.cbFolder.Items.Add( NewFolder );
