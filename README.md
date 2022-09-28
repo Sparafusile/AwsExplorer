@@ -17,6 +17,10 @@ Planned features:
 
 - Ability to query a delimited file (CSV, JSON, Parquet)
 - Ability to change file version in versioned buckets
+- Additional options when creating a bucket
+- Options to lock a file (legal hold or retention period)
+- Ability to manage tags on files
+- Ability to make files public/private
 
 ## Upload files or folders to S3
 
