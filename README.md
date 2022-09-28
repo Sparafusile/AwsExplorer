@@ -13,6 +13,11 @@ AwsExplorer allows a user to manage files located in a remote AWS S3 bucket, upl
 - Optionally, track updates to files in S3
 - Optionally, associate comments to each file
 
+Planned features:
+
+- Ability to query a delimited file (CSV, JSON, Parquet)
+- Ability to change file version in versioned buckets
+
 ## Upload files or folders to S3
 
 Uploading files or folders to S3 using AwsExplorer is as easy as dragging them onto the TreeView component on the left-hand side of the window. If you elected to track changes and comments on files, an entry will be created listing who and when uploaded the file.
