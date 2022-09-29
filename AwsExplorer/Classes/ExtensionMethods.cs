@@ -73,4 +73,9 @@ public static partial class ExtensionMethods
             }
         }
     }
+
+    public static bool IsWrapped( this Label label )
+    {
+        return label.Height - label.Padding.Top - label.Padding.Bottom > label.Font.Size * 2;
+    }
 }

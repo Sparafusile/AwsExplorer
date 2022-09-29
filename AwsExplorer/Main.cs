@@ -1,5 +1,6 @@
 using Amazon.S3;
 using AwsExplorer;
+using System.Text;
 using Explorer.Models;
 using Amazon.S3.Model;
 using System.Text.Json;
@@ -146,9 +147,11 @@ public partial class Main : Form
 
         this.label4.Visible = this.Folder.DatFile;
         this.label5.Visible = this.Folder.DatFile;
+        this.label6.Visible = this.Folder.DatFile;
         this.txtComments.Visible = this.Folder.DatFile;
-        this.txtHistory.Visible = this.Folder.DatFile;
         this.btnSaveComments.Visible = this.Folder.DatFile;
+        this.txtHistory.Visible = this.Folder.DatFile;
+        this.txtVersions.Visible = this.Folder.DatFile;
 
         this.Log( "Loading remote file list: " + this.Folder.Bucket );
         this.lblStatus.Text = $"Loading remote files from {this.Folder.Bucket}...";
@@ -442,6 +445,13 @@ public partial class Main : Form
         new HistoryDialog( this.MetaData.History ){ StartPosition = FormStartPosition.CenterParent }.ShowDialog( this ) ;
     }
 
+    private void TxtVersions_Click( object sender, EventArgs e )
+    {
+        if( this.S3Client == null || this.Folder == null ) return;
+        if( this.treeView.SelectedNode.Tag is not S3Object obj ) return;
+        new VersionDialog( this.S3Client, this.Folder.Bucket, obj.Key, this.MetaData?.History ) { StartPosition = FormStartPosition.CenterParent }.ShowDialog( this );
+    }
+
     private async void TreeView_AfterSelect( object sender, TreeViewEventArgs e )
     {
         if( e.Node == null ) return;
@@ -451,20 +461,75 @@ public partial class Main : Form
             if( e.Node.Tag is not S3Object obj ) return;
 
             this.lblKey.Text = obj.Key;
+
+            if( this.lblKey.IsWrapped() )
+            {
+                var parts = obj.Key.Split( "/" ).ToList();
+
+                if( parts.Count > 2 )
+                {
+                    parts[1] = "...";
+                    this.lblKey.Text = string.Join( "/", parts );
+
+                    while( this.lblKey.IsWrapped() && parts.Count > 3 )
+                    {
+                        parts.RemoveAt( 2 );
+                        this.lblKey.Text = string.Join( "/", parts );
+                    }
+                }
+
+                if( this.lblKey.IsWrapped() )
+                {
+                    this.lblKey.Text = ".../" + parts.Last();
+                }
+            }
+
             this.lblSize.Text = SizeSuffix( obj.Size ) + $"   ({obj.Size:N0} byes)";
             this.lblModified.Text = obj.LastModified.ToUniversalTime().ToString( "G" ) + " UTC";
             this.txtComments.Text = this.txtHistory.Text = null;
 
-            if( this.S3Client != null && this.Folder != null && this.Folder.DatFile )
-            {
-                this.MetaData = await this.GetMetaData( obj.Key );
-                this.txtComments.Text = this.MetaData?.Comments;
+            this.MetaData = null;
 
-                if( this.MetaData?.History != null )
+            if( this.S3Client != null && this.Folder != null )
+            {
+                if( this.Folder.DatFile )
                 {
-                    var h = this.MetaData.History.OrderByDescending( m => m.Timestamp ).ToList();
-                    this.txtHistory.Text = string.Join( Environment.NewLine + Environment.NewLine, h );
+                    this.MetaData = await this.GetMetaData( obj.Key );
+                    this.txtComments.Text = this.MetaData?.Comments;
+
+                    if( this.MetaData?.History != null )
+                    {
+                        var h = this.MetaData.History.OrderByDescending( m => m.Timestamp ).ToList();
+                        this.txtHistory.Text = string.Join( Environment.NewLine + Environment.NewLine, h );
+                    }
                 }
+
+                var sb = new StringBuilder();
+                var response = await this.S3Client.ListVersionsAsync( this.Folder.Bucket, obj.Key );
+
+                foreach( var v in response.Versions.OrderByDescending( m => m.LastModified ) )
+                {
+                    var size = SizeSuffix( v.Size );
+                    var time = v.LastModified.ToUniversalTime().ToString( "G" );
+
+                    var h = this.MetaData?.History
+                        .OrderBy( m => Math.Abs( ( m.Timestamp.ToUniversalTime() - v.LastModified.ToUniversalTime() ).TotalMinutes ) )
+                        .Where( m => Math.Abs( ( m.Timestamp.ToUniversalTime() - v.LastModified.ToUniversalTime() ).TotalMinutes ) < 1 )
+                        .FirstOrDefault();
+
+                    if( h == null )
+                    {
+                        sb.AppendLine( $"{time,-32} {size}" );
+                    }
+                    else
+                    {
+                        sb.AppendLine( $"{time,-32} {h.Name,-32} {size}" );
+                    }
+
+                    sb.AppendLine( string.Empty );
+                }
+
+                this.txtVersions.Text = sb.ToString();
             }
         }
         else

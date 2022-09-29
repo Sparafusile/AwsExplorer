@@ -31,7 +31,6 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main));
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
-            this.tbSettings = new System.Windows.Forms.ToolStripButton();
             this.tbAddFolder = new System.Windows.Forms.ToolStripButton();
             this.tbSync = new System.Windows.Forms.ToolStripButton();
             this.tbDownload = new System.Windows.Forms.ToolStripButton();
@@ -41,6 +40,7 @@
             this.differentAccountToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tbCollapseAll = new System.Windows.Forms.ToolStripButton();
             this.tbViewLogs = new System.Windows.Forms.ToolStripButton();
+            this.tbSettings = new System.Windows.Forms.ToolStripButton();
             this.tbFontIncrease = new System.Windows.Forms.ToolStripButton();
             this.tbFontDecrease = new System.Windows.Forms.ToolStripButton();
             this.splitContainer = new System.Windows.Forms.SplitContainer();
@@ -48,6 +48,7 @@
             this.treeView = new System.Windows.Forms.TreeView();
             this.cbFolder = new System.Windows.Forms.ComboBox();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
+            this.txtVersions = new System.Windows.Forms.TextBox();
             this.lblModified = new System.Windows.Forms.Label();
             this.lblSize = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
@@ -59,6 +60,7 @@
             this.label5 = new System.Windows.Forms.Label();
             this.txtHistory = new System.Windows.Forms.TextBox();
             this.btnSaveComments = new System.Windows.Forms.Button();
+            this.label6 = new System.Windows.Forms.Label();
             this.treeViewContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.treeViewNodeDownload = new System.Windows.Forms.ToolStripMenuItem();
             this.treeViewNodeShare = new System.Windows.Forms.ToolStripMenuItem();
@@ -86,7 +88,6 @@
             // 
             this.toolStrip1.AutoSize = false;
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tbSettings,
             this.tbAddFolder,
             this.tbSync,
             this.tbDownload,
@@ -94,6 +95,7 @@
             this.tbMoveFiles,
             this.tbCollapseAll,
             this.tbViewLogs,
+            this.tbSettings,
             this.tbFontIncrease,
             this.tbFontDecrease});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
@@ -101,18 +103,6 @@
             this.toolStrip1.Size = new System.Drawing.Size(800, 40);
             this.toolStrip1.TabIndex = 0;
             this.toolStrip1.Text = "toolStrip1";
-            // 
-            // tbSettings
-            // 
-            this.tbSettings.AutoSize = false;
-            this.tbSettings.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tbSettings.Image = ((System.Drawing.Image)(resources.GetObject("tbSettings.Image")));
-            this.tbSettings.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
-            this.tbSettings.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tbSettings.Name = "tbSettings";
-            this.tbSettings.Size = new System.Drawing.Size(36, 37);
-            this.tbSettings.Text = "Settings";
-            this.tbSettings.Click += new System.EventHandler(this.TbSettings_Click);
             // 
             // tbAddFolder
             // 
@@ -182,14 +172,14 @@
             // sameAccountToolStripMenuItem
             // 
             this.sameAccountToolStripMenuItem.Name = "sameAccountToolStripMenuItem";
-            this.sameAccountToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.sameAccountToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
             this.sameAccountToolStripMenuItem.Text = "Same Account";
             this.sameAccountToolStripMenuItem.Click += new System.EventHandler(this.TbMoveBucket_Click);
             // 
             // differentAccountToolStripMenuItem
             // 
             this.differentAccountToolStripMenuItem.Name = "differentAccountToolStripMenuItem";
-            this.differentAccountToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.differentAccountToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
             this.differentAccountToolStripMenuItem.Text = "Different Account";
             this.differentAccountToolStripMenuItem.Click += new System.EventHandler(this.TbMoveAccount_Click);
             // 
@@ -208,6 +198,7 @@
             // 
             // tbViewLogs
             // 
+            this.tbViewLogs.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.tbViewLogs.AutoSize = false;
             this.tbViewLogs.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.tbViewLogs.Image = ((System.Drawing.Image)(resources.GetObject("tbViewLogs.Image")));
@@ -217,6 +208,19 @@
             this.tbViewLogs.Size = new System.Drawing.Size(37, 37);
             this.tbViewLogs.Text = "View Log";
             this.tbViewLogs.Click += new System.EventHandler(this.TbViewLogs_Click);
+            // 
+            // tbSettings
+            // 
+            this.tbSettings.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tbSettings.AutoSize = false;
+            this.tbSettings.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tbSettings.Image = ((System.Drawing.Image)(resources.GetObject("tbSettings.Image")));
+            this.tbSettings.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+            this.tbSettings.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tbSettings.Name = "tbSettings";
+            this.tbSettings.Size = new System.Drawing.Size(36, 37);
+            this.tbSettings.Text = "Settings";
+            this.tbSettings.Click += new System.EventHandler(this.TbSettings_Click);
             // 
             // tbFontIncrease
             // 
@@ -311,6 +315,7 @@
             this.tableLayoutPanel2.ColumnCount = 2;
             this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 150F));
             this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel2.Controls.Add(this.txtVersions, 0, 10);
             this.tableLayoutPanel2.Controls.Add(this.lblModified, 1, 2);
             this.tableLayoutPanel2.Controls.Add(this.lblSize, 1, 1);
             this.tableLayoutPanel2.Controls.Add(this.label1, 0, 0);
@@ -319,24 +324,42 @@
             this.tableLayoutPanel2.Controls.Add(this.lblKey, 1, 0);
             this.tableLayoutPanel2.Controls.Add(this.label4, 0, 4);
             this.tableLayoutPanel2.Controls.Add(this.txtComments, 0, 5);
-            this.tableLayoutPanel2.Controls.Add(this.label5, 0, 6);
-            this.tableLayoutPanel2.Controls.Add(this.txtHistory, 0, 7);
-            this.tableLayoutPanel2.Controls.Add(this.btnSaveComments, 0, 8);
+            this.tableLayoutPanel2.Controls.Add(this.label5, 0, 7);
+            this.tableLayoutPanel2.Controls.Add(this.txtHistory, 0, 8);
+            this.tableLayoutPanel2.Controls.Add(this.btnSaveComments, 0, 6);
+            this.tableLayoutPanel2.Controls.Add(this.label6, 0, 9);
             this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel2.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel2.Name = "tableLayoutPanel2";
-            this.tableLayoutPanel2.RowCount = 9;
+            this.tableLayoutPanel2.RowCount = 11;
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 25F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 25F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 25F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 15F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
             this.tableLayoutPanel2.Size = new System.Drawing.Size(407, 393);
             this.tableLayoutPanel2.TabIndex = 0;
+            // 
+            // txtVersions
+            // 
+            this.txtVersions.AcceptsReturn = true;
+            this.tableLayoutPanel2.SetColumnSpan(this.txtVersions, 2);
+            this.txtVersions.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.txtVersions.Location = new System.Drawing.Point(3, 331);
+            this.txtVersions.Multiline = true;
+            this.txtVersions.Name = "txtVersions";
+            this.txtVersions.ReadOnly = true;
+            this.txtVersions.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.txtVersions.Size = new System.Drawing.Size(401, 59);
+            this.txtVersions.TabIndex = 12;
+            this.txtVersions.WordWrap = false;
+            this.txtVersions.Click += new System.EventHandler(this.TxtVersions_Click);
             // 
             // lblModified
             // 
@@ -414,14 +437,14 @@
             this.txtComments.Multiline = true;
             this.txtComments.Name = "txtComments";
             this.txtComments.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtComments.Size = new System.Drawing.Size(401, 100);
+            this.txtComments.Size = new System.Drawing.Size(401, 58);
             this.txtComments.TabIndex = 7;
             // 
             // label5
             // 
             this.label5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(3, 218);
+            this.label5.Location = new System.Drawing.Point(3, 226);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(144, 15);
             this.label5.TabIndex = 8;
@@ -432,12 +455,12 @@
             this.txtHistory.AcceptsReturn = true;
             this.tableLayoutPanel2.SetColumnSpan(this.txtHistory, 2);
             this.txtHistory.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtHistory.Location = new System.Drawing.Point(3, 239);
+            this.txtHistory.Location = new System.Drawing.Point(3, 247);
             this.txtHistory.Multiline = true;
             this.txtHistory.Name = "txtHistory";
             this.txtHistory.ReadOnly = true;
             this.txtHistory.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtHistory.Size = new System.Drawing.Size(401, 100);
+            this.txtHistory.Size = new System.Drawing.Size(401, 58);
             this.txtHistory.TabIndex = 9;
             this.txtHistory.WordWrap = false;
             this.txtHistory.Click += new System.EventHandler(this.TxtHistory_Click);
@@ -447,7 +470,7 @@
             this.btnSaveComments.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.tableLayoutPanel2.SetColumnSpan(this.btnSaveComments, 2);
             this.btnSaveComments.Image = ((System.Drawing.Image)(resources.GetObject("btnSaveComments.Image")));
-            this.btnSaveComments.Location = new System.Drawing.Point(3, 350);
+            this.btnSaveComments.Location = new System.Drawing.Point(3, 181);
             this.btnSaveComments.Name = "btnSaveComments";
             this.btnSaveComments.Size = new System.Drawing.Size(401, 35);
             this.btnSaveComments.TabIndex = 10;
@@ -456,6 +479,16 @@
             this.btnSaveComments.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
             this.btnSaveComments.UseVisualStyleBackColor = true;
             this.btnSaveComments.Click += new System.EventHandler(this.BtnSaveComments_Click);
+            // 
+            // label6
+            // 
+            this.label6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(3, 310);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(144, 15);
+            this.label6.TabIndex = 11;
+            this.label6.Text = "Versions";
             // 
             // treeViewContextMenu
             // 
@@ -617,5 +650,7 @@
         private ToolStripDropDownButton tbMoveFiles;
         private ToolStripMenuItem sameAccountToolStripMenuItem;
         private ToolStripMenuItem differentAccountToolStripMenuItem;
+        private TextBox txtVersions;
+        private Label label6;
     }
 }

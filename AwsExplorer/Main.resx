@@ -61,18 +61,6 @@
     <value>17, 17</value>
   </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="tbSettings.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAFgSURBVEhL5ZVNLgVREEYfCxAmYglGfsIakBBbITEixhLG
-        NiAWYCisQ/wGG8BUwoBzEpW8VN/u5yY94ktOctNdVbe7uu7Xg3+jBThOLEJv2oOvxD70ojE4gbzBKYxD
-        tVbgCGbB4utwC3mDO9gEY4w9hDXo1CQ8ggU+wCK5cOYejHX9DFNQlE+yBblALTtgrYacigcoJb3DGez+
-        4NprpdgnWIaG5uAKcoKFDmACQq69VtrkBhzroqbhHKKn4tMOFw95zXsR9wkXMAOdcopeIBJtSZu8F3Gv
-        sAojZZDBtRu8wcgx9fV8TV83EmtadAmtLfLD+IEiIaj9yNcwDw05Wo5YThAL+bS2RFyXiosHdQka8nB4
-        SEpJNWxD8aApj7nH3UBHVRvIBTLDVmEHtJtOOQkaV5idhlbyJA1wA4wxVoP81Zhmaclac95AC29tRa38
-        ueQN/An1Jo0w/zJb/eYvaTD4BnY8xn0Ajl/wAAAAAElFTkSuQmCC
-</value>
-  </data>
   <data name="tbAddFolder.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
@@ -144,6 +132,18 @@
         mBn4+gscWJbWmk42WCz4MNidLnonsIwyKxzxMraYIJ0DooHVFZfPr0rSuSMaXO2xwA5PpDd5IBpcqWCG
         OVSS3qS1QJkivUmmQElv4grOWEIlle5EF6/nNq7gBpVoky5toOc2+p79oRk2gxe4dN9teX/4giyb/x3Y
         9A9k2USHMmxa/s2+0VmbDU6IBvyi4WuMKqW8Aazp+uwb2P5jAAAAAElFTkSuQmCC
+</value>
+  </data>
+  <data name="tbSettings.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAFgSURBVEhL5ZVNLgVREEYfCxAmYglGfsIakBBbITEixhLG
+        NiAWYCisQ/wGG8BUwoBzEpW8VN/u5yY94ktOctNdVbe7uu7Xg3+jBThOLEJv2oOvxD70ojE4gbzBKYxD
+        tVbgCGbB4utwC3mDO9gEY4w9hDXo1CQ8ggU+wCK5cOYejHX9DFNQlE+yBblALTtgrYacigcoJb3DGez+
+        4NprpdgnWIaG5uAKcoKFDmACQq69VtrkBhzroqbhHKKn4tMOFw95zXsR9wkXMAOdcopeIBJtSZu8F3Gv
+        sAojZZDBtRu8wcgx9fV8TV83EmtadAmtLfLD+IEiIaj9yNcwDw05Wo5YThAL+bS2RFyXiosHdQka8nB4
+        SEpJNWxD8aApj7nH3UBHVRvIBTLDVmEHtJtOOQkaV5idhlbyJA1wA4wxVoP81Zhmaclac95AC29tRa38
+        ueQN/An1Jo0w/zJb/eYvaTD4BnY8xn0Ajl/wAAAAAElFTkSuQmCC
 </value>
   </data>
   <data name="tbFontIncrease.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">

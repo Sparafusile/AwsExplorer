@@ -32,6 +32,7 @@ public class FileHistory
 
     public override string ToString()
     {
-        return this.Timestamp.ToString( "G" ) + "    " + this.Name + "    " + this.Action;
+        var time = this.Timestamp.ToUniversalTime().ToString( "G" );
+        return $"{time,-32} {this.Name,-32} {this.Action}";
     }
 }
