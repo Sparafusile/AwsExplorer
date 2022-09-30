@@ -1,6 +1,6 @@
 # AwsExplorer
  
-![Main Screen](Screenshots/MainScreen.png)
+![Main Screen](Screenshots/MainScreen.png) 
 
 AwsExplorer allows a user to manage files located in a remote AWS S3 bucket, upload new files to the bucket, download existing files from the bucket, and sync files in both locations. With AwsExplorer, you can:
 
